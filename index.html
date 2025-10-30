@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SunriseRP</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f2f2f2;
+      color: #333;
+    }
+
+    header {
+      background: #d62828;
+      color: white;
+      text-align: center;
+      padding: 30px 10px;
+    }
+
+    header img {
+      max-width: 250px;
+      display: block;
+      margin: 0 auto 15px;
+    }
+
+    nav {
+      background: #333;
+      text-align: center;
+      padding: 10px 0;
+    }
+
+    nav a {
+      color: white;
+      margin: 0 15px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    nav a:hover {
+      color: #ffba08;
+    }
+
+    main {
+      max-width: 960px;
+      margin: 20px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      border-bottom: 2px solid #d62828;
+      padding-bottom: 8px;
+      color: #d62828;
+    }
+
+    section {
+      margin-bottom: 50px;
+    }
+
+    .team-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: space-between;
+    }
+
+    .team-member {
+      flex: 1 1 200px;
+      text-align: center;
+      background: #fafafa;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 15px;
+    }
+
+    .team-member img {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 10px;
+    }
+
+    form {
+      background: #fafafa;
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 15px;
+    }
+
+    button {
+      margin-top: 15px;
+      background: #d62828;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background: #a61b1b;
+    }
+
+    footer {
+      background: #333;
+      color: white;
+      text-align: center;
+      padding: 20px;
+      margin-top: 40px;
+    }
+
+    .info-box {
+      background: #eee;
+      border-left: 5px solid #d62828;
+      padding: 10px 15px;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <img src="sunriserp.png" alt="SunriseRP Logo">
+    <h1>Willkommen bei SunriseRP</h1>
+    <p>Dein Roleplay-Erlebnis der Extraklasse</p>
+  </header>
+
+  <nav>
+    <a href="#regelwerk">Regelwerk</a>
+    <a href="#team">Team</a>
+    <a href="#bewerbung">Bewerbungen</a>
+    <a href="#entbannung">Entbannung</a>
+    <a href="#login">Login</a>
+  </nav>
+
+  <main>
+
+    <section id="regelwerk">
+      <h2>Regelwerk</h2>
+      <p>Hier findest du unser vollständiges Regelwerk. Bitte lies dir alles sorgfältig durch, bevor du auf unserem Server spielst.</p>
+      <ul>
+        <li>§1 – Respektiere alle Spieler und Teammitglieder.</li>
+        <li>§2 – Kein Cheating, Bugusing oder Trolling.</li>
+        <li>§3 – RP-Brüche (Metagaming, Powergaming etc.) sind verboten.</li>
+        <li>§4 – Folge stets den Anweisungen des Teams.</li>
+        <li>§5 – Verstöße gegen die Regeln führen zu Verwarnungen oder Banns.</li>
+      </ul>
+    </section>
+
+    <section id="team">
+      <h2>Unser Team</h2>
+      <div class="team-grid">
+        <div class="team-member">
+          <img src="teamler1.png" alt="Fabian">
+          <h3>Fabian</h3>
+          <p>Leitung</p>
+        </div>
+        <div class="team-member">
+          <img src="teamler2.png" alt="Moritz">
+          <h3>Moritz</h3>
+          <p>Chef Supporter</p>
+        </div>
+        <div class="team-member">
+          <img src="teamler3.png" alt="Fin">
+          <h3>Fin</h3>
+          <p>Chef Content Creator</p>
+        </div>
+        <div class="team-member">
+          <img src="teamler4.png" alt="Perry">
+          <h3>Perry</h3>
+          <p>Chef Designer</p>
+        </div>
+        <div class="team-member">
+          <img src="teamler5.png" alt="Lemon">
+          <h3>Lemon</h3>
+          <p>Chef Builder</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="bewerbung">
+      <h2>Bewerbung</h2>
+      <div class="info-box">Hier kannst du dich für das Team oder eine Fraktion bewerben.</div>
+      <form method="post" action="#">
+        <label>Art der Bewerbung:</label>
+        <select name="typ" required>
+          <option value="">Bitte auswählen</option>
+          <option value="team">Team-Bewerbung</option>
+          <option value="fraktion">Fraktions-Bewerbung</option>
+        </select>
+
+        <label>Discord-Name:</label>
+        <input type="text" name="discord" required>
+
+        <label>Minecraft-Name:</label>
+        <input type="text" name="minecraft" required>
+
+        <label>E-Mail-Adresse:</label>
+        <input type="email" name="email" required>
+
+        <label>Gewünschte Position:</label>
+        <input type="text" name="position" required>
+
+        <label>Begründung:</label>
+        <textarea name="begruendung" rows="5" required></textarea>
+
+        <button type="submit">Bewerbung absenden</button>
+      </form>
+    </section>
+
+    <section id="entbannung">
+      <h2>Entbannungsantrag</h2>
+      <div class="info-box">Wenn du gebannt wurdest, kannst du hier einen Antrag auf Entbannung stellen.</div>
+      <form method="post" action="#">
+        <label>Minecraft-Name:</label>
+        <input type="text" name="minecraft" required>
+
+        <label>E-Mail-Adresse:</label>
+        <input type="email" name="email" required>
+
+        <label>Grund des Banns:</label>
+        <textarea name="grund" rows="3" required></textarea>
+
+        <label>Warum solltest du entbannt werden?</label>
+        <textarea name="begruendung" rows="5" required></textarea>
+
+        <button type="submit">Entbannungsantrag absenden</button>
+      </form>
+    </section>
+
+    <section id="login">
+      <h2>Login (Leitung & Team)</h2>
+      <div class="info-box">
+        Leitung – fester Zugang:<br>
+        <strong>Benutzername:</strong> Leitung<br>
+        <strong>Passwort:</strong> <code>!SRP-Leitung_2025-Complex$Key#92</code>
+      </div>
+
+      <form method="post" action="#">
+        <label>Benutzername:</label>
+        <input type="text" name="username" required>
+
+        <label>Passwort:</label>
+        <input type="password" name="password" required>
+
+        <button type="submit">Anmelden</button>
+      </form>
+    </section>
+
+  </main>
+
+  <footer>
+    <p>© 2025 SunriseRP – Alle Rechte vorbehalten.</p>
+  </footer>
+
+</body>
+</html>
