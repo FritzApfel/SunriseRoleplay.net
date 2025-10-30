@@ -157,7 +157,7 @@ Bei Fragen gerne im Support-Warteraum auf unserem Discord einfinden. Ein Support
   <h2>Teammitglieder</h2>
   <table class="team-table">
     <thead>
-      <tr><th>Avatar</th><th>Name</th><th>Rolle</th><th>Aktion</th></tr>
+      <tr><th>Avatar</th><th>Name</th><th>Rolle</th></tr>
     </thead>
     <tbody></tbody>
   </table>
@@ -302,7 +302,6 @@ function renderTeam(){
       <td><img src="${m.avatar}" class="avatar"></td>
       <td>${m.name}</td>
       <td>${m.role}</td>
-      <td><button class="action-btn" onclick="editTeam(${m.name})">Berechtigungen</button></td>
     </tr>`;
   });
 }
@@ -333,21 +332,13 @@ function renderPanel(){
   teamMembers.forEach((m,i)=>{
     tbodyT.innerHTML += `<tr>
       <td>${m.name}</td><td>${m.role}</td><td><img src="${m.avatar}" class="avatar"></td>
-      <td><button class="action-btn" onclick="editTeam(${i})">Berechtigungen</button></td>
+      <td><button class="action-btn" onclick="editPermissions(${i})">Berechtigungen</button></td>
     </tr>`;
   });
 }
 
-function saveData(){
-  localStorage.setItem('teamMembers', JSON.stringify(teamMembers));
-  localStorage.setItem('bewerbungen', JSON.stringify(bewerbungen));
-  localStorage.setItem('entbannungen', JSON.stringify(entbannungen));
-  renderTeam();
-  renderPanel();
-}
-
 /* ----------------- BEARBEITEN ----------------- */
-function editTeam(i){
+function editPermissions(i){
   const m = teamMembers[i];
   const perms = prompt(`Aktuelle Berechtigungen für ${m.name}:\nBewerbungen bearbeiten: ${m.permissions.editApplications ? 'Ja' : 'Nein'}\nEntbannungen bearbeiten: ${m.permissions.editBans ? 'Ja' : 'Nein'}\nTeam löschen: ${m.permissions.deleteTeam ? 'Ja' : 'Nein'}\nMöchten Sie Änderungen vornehmen? (Ja/Nein)`);
   if(perms.toLowerCase() === 'ja'){
