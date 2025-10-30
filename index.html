@@ -50,6 +50,7 @@ section {
   background: rgba(0,0,0,0.55);
   border-radius: 10px;
 }
+
 section.active { display: block; }
 
 h2, h3 {
@@ -248,7 +249,6 @@ Bei Fragen gerne im Support-Warteraum auf Discord. LG Fabian (:
   </div>
 </section>
 
-<!-- ----------------- SCRIPT ----------------- -->
 <script>
 /* ----------------- DATEN ----------------- */
 let teamMembers = JSON.parse(localStorage.getItem('teamMembers')) || [];
@@ -318,38 +318,31 @@ function renderPanel(){
   });
 }
 
+/* ----------------- DATEN SPEICHERN ----------------- */
 function saveData(){
   localStorage.setItem('teamMembers', JSON.stringify(teamMembers));
   localStorage.setItem('bewerbungen', JSON.stringify(bewerbungen));
   localStorage.setItem('entbannungen', JSON.stringify(entbannungen));
+  renderTeam();
+  renderPanel();
 }
 
-/* ----------------- LOGIN ----------------- */
-document.querySelector('.login-form').addEventListener('submit', e=>{
-  e.preventDefault();
-  const user = document.querySelector('.login-user').value;
-  const pass = document.querySelector('.login-pass').value;
-  const member = teamMembers.find(m => m.name === user && m.pass === pass);
-  if(member){ currentUser=member; alert('Login erfolgreich!'); document.querySelector('.panel-content').style.display='block'; renderPanel(); } 
-  else alert('Falscher Benutzername oder Passwort');
-});
-
-/* ----------------- BEWERBUNGEN ----------------- */
+/* ----------------- BEWERBUNG ----------------- */
 document.querySelector('.bewerbung-form').addEventListener('submit', e=>{
   e.preventDefault();
   const art = document.querySelector('.bewerbungs-art').value;
-  const position = document.querySelector('.bewerbung-position')?.value || '';
+  const position = document.querySelector('.bewerbung-position').value;
   const discord = document.querySelector('.bewerbung-discord').value;
   const minecraft = document.querySelector('.bewerbung-minecraft').value;
   const email = document.querySelector('.bewerbung-email').value;
   const text = document.querySelector('.bewerbung-text').value;
   bewerbungen.push(createBewerbung(art,discord,minecraft,email,position,text));
   saveData();
-  alert('Bewerbung gesendet!');
+  alert('Bewerbung abgeschickt!');
   e.target.reset();
 });
 
-/* ----------------- ENTBANNUNGEN ----------------- */
+/* ----------------- ENTBANNUNG ----------------- */
 document.querySelector('.entbannung-form').addEventListener('submit', e=>{
   e.preventDefault();
   const minecraft = document.querySelector('.entbannung-minecraft').value;
@@ -359,56 +352,74 @@ document.querySelector('.entbannung-form').addEventListener('submit', e=>{
   const text = document.querySelector('.entbannung-text').value;
   entbannungen.push(createEntbannung(minecraft,discord,email,discordban,text));
   saveData();
-  alert('Entbannungsantrag gesendet!');
+  alert('Entbannungsantrag abgeschickt!');
   e.target.reset();
 });
 
-/* ----------------- PANEL ACTIONS ----------------- */
-function bulkBewerbungenSeen(){ bewerbungen.forEach(b=>b.status='gesehen'); saveData(); renderPanel(); }
-function editBewerbung(i){ 
-  const b = bewerbungen[i];
-  b.status = prompt('Status ändern (offen/gesehen/abgelehnt):', b.status) || b.status;
-  b.notiz = prompt('Notiz:', b.notiz) || b.notiz;
-  b.bearbeiter = currentUser.name;
-  saveData(); renderPanel();
-}
-function editEntbannung(i){ 
-  const e = entbannungen[i];
-  e.status = prompt('Status ändern (offen/gesehen/abgelehnt):', e.status) || e.status;
-  e.notiz = prompt('Notiz:', e.notiz) || e.notiz;
-  e.bearbeiter = currentUser.name;
-  saveData(); renderPanel();
-}
-function deleteTeam(i){ if(confirm('Teamaccount wirklich löschen?')){ teamMembers.splice(i,1); saveData(); renderTeam(); renderPanel(); } }
-
-/* ----------------- TEAM ERSTELLEN ----------------- */
+/* ----------------- TEAM CREATE ----------------- */
 document.querySelector('.team-create-form').addEventListener('submit', e=>{
   e.preventDefault();
   const name = document.querySelector('.team-name').value;
   const role = document.querySelector('.team-role').value;
   const pass = document.querySelector('.team-pass').value;
-  const avatarInput = document.querySelector('.team-avatar');
-  let avatar = 'sunriserp.png';
-  if(avatarInput.files[0]) avatar = URL.createObjectURL(avatarInput.files[0]);
-  const perms = {
-    editApplications: document.querySelector('.perm-apps').checked,
-    editBans: document.querySelector('.perm-bans').checked,
-    assignRoles: document.querySelector('.perm-team').checked,
-    deleteTeam: document.querySelector('.perm-team').checked
-  };
-  teamMembers.push(createTeamMember(name,role,pass,avatar,perms));
+  const avatar = document.querySelector('.avatar').src;
+  teamMembers.push(createTeamMember(name,role,pass,avatar));
   saveData();
-  renderTeam(); renderPanel();
   e.target.reset();
+  document.getElementById('avatar-preview').src='sunriserp.png';
 });
 
-/* ----------------- HELPER ----------------- */
-function togglePositionField(){
-  const val = document.querySelector('.bewerbungs-art').value;
-  document.querySelector('.team-positionen').style.display = (val==='Teambewerbung') ? 'block' : 'none';
+/* ----------------- AVATAR PREVIEW ----------------- */
+document.querySelector('.team-avatar').addEventListener('change', function(){
+  const reader = new FileReader();
+  reader.onload = e => document.getElementById('avatar-preview').src = e.target.result;
+  reader.readAsDataURL(this.files[0]);
+});
+
+/* ----------------- LOGIN ----------------- */
+document.querySelector('.login-form').addEventListener('submit', e=>{
+  e.preventDefault();
+  const user = document.querySelector('.login-user').value;
+  const pass = document.querySelector('.login-pass').value;
+  const found = teamMembers.find(m => m.name===user && m.pass===pass);
+  if(found){ currentUser = found; alert('Login erfolgreich!'); document.querySelector('.panel-content').style.display='block'; renderPanel(); }
+  else alert('Falscher Benutzername oder Passwort');
+});
+
+/* ----------------- TEAM DELETE ----------------- */
+function deleteTeam(i){ if(confirm('Teamaccount wirklich löschen?')){ teamMembers.splice(i,1); saveData(); } }
+
+/* ----------------- BEWERBUNG EDIT ----------------- */
+function editBewerbung(i){
+  const b = bewerbungen[i];
+  const status = prompt("Status (offen/gesehen/bearbeitet):", b.status);
+  if(status) b.status=status;
+  const notiz = prompt("Notiz:", b.notiz);
+  if(notiz!==null) b.notiz=notiz;
+  b.bearbeiter = currentUser ? currentUser.name : '';
+  saveData();
 }
 
-// Initial Render
+/* ----------------- ENTBANNUNG EDIT ----------------- */
+function editEntbannung(i){
+  const e = entbannungen[i];
+  const status = prompt("Status (offen/gesehen/bearbeitet):", e.status);
+  if(status) e.status=status;
+  const notiz = prompt("Notiz:", e.notiz);
+  if(notiz!==null) e.notiz=notiz;
+  e.bearbeiter = currentUser ? currentUser.name : '';
+  saveData();
+}
+
+/* ----------------- ALLE BEWERBUNGEN GESEHEN ----------------- */
+function bulkBewerbungenSeen(){ bewerbungen.forEach(b=>b.status='gesehen'); saveData(); }
+
+/* ----------------- TOGGLE POSITION ----------------- */
+function togglePositionField(){
+  document.querySelector('.team-positionen').style.display = document.querySelector('.bewerbungs-art').value === 'Teambewerbung' ? 'block' : 'none';
+}
+
+/* ----------------- INIT ----------------- */
 renderTeam();
 </script>
 
