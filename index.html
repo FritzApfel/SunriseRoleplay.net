@@ -157,7 +157,7 @@ Bei Fragen gerne im Support-Warteraum auf unserem Discord einfinden. Ein Support
   <h2>Teammitglieder</h2>
   <table class="team-table">
     <thead>
-      <tr><th>Avatar</th><th>Name</th><th>Rolle</th></tr>
+      <tr><th>Avatar</th><th>Name</th><th>Rolle</th><th>Aktion</th></tr>
     </thead>
     <tbody></tbody>
   </table>
@@ -302,6 +302,7 @@ function renderTeam(){
       <td><img src="${m.avatar}" class="avatar"></td>
       <td>${m.name}</td>
       <td>${m.role}</td>
+      <td><button class="action-btn" onclick="openPermissions(${m})">Berechtigungen</button></td>
     </tr>`;
   });
 }
@@ -348,199 +349,17 @@ function renderPanel(){
   });
 }
 
-/* ----------------- FORM HANDLER ----------------- */
-// Bewerbung Art umschalten Positionfeld sichtbar machen
-function togglePositionField(){
-  const art = document.querySelector('.bewerbungs-art').value;
-  const pos = document.querySelector('.team-positionen');
-  if(art === 'Teambewerbung') pos.style.display = 'block';
-  else pos.style.display = 'none';
+function openPermissions(member){
+  alert(`Berechtigungen für ${member.name}: \n- Bewerbungen bearbeiten: ${member.permissions.editApplications} \n- Entbannungen bearbeiten: ${member.permissions.editBans} \n- Team löschen: ${member.permissions.deleteTeam}`);
+  // Implementiere hier die Bearbeitung der Berechtigungen
 }
 
-// Bewerbung absenden
-document.querySelector('.bewerbung-form').addEventListener('submit', e => {
-  e.preventDefault();
-  const art = document.querySelector('.bewerbungs-art').value;
-  const discord = document.querySelector('.bewerbung-discord').value.trim();
-  const minecraft = document.querySelector('.bewerbung-minecraft').value.trim();
-  const email = document.querySelector('.bewerbung-email').value.trim();
-  const position = document.querySelector('.bewerbung-position') ? document.querySelector('.bewerbung-position').value : '';
-  const text = document.querySelector('.bewerbung-text').value.trim();
-  if(!discord || !minecraft || !email || !text){
-    alert('Bitte alle Felder ausfüllen!');
-    return;
-  }
-  bewerbungen.push(createBewerbung(art, discord, minecraft, email, position, text));
-  saveData();
-  alert('Bewerbung erfolgreich abgeschickt!');
-  e.target.reset();
-});
-
-// Entbannung absenden
-document.querySelector('.entbannung-form').addEventListener('submit', e => {
-  e.preventDefault();
-  const minecraft = document.querySelector('.entbannung-minecraft').value.trim();
-  const discord = document.querySelector('.entbannung-discord').value.trim();
-  const email = document.querySelector('.entbannung-email').value.trim();
-  const discordban = document.querySelector('.entbannung-discordban').checked;
-  const text = document.querySelector('.entbannung-text').value.trim();
-  if(!minecraft || !discord || !email || !text){
-    alert('Bitte alle Felder ausfüllen!');
-    return;
-  }
-  entbannungen.push(createEntbannung(minecraft, discord, email, discordban, text));
-  saveData();
-  alert('Entbannungsantrag erfolgreich abgeschickt!');
-  e.target.reset();
-});
-
-// Teamavatar Vorschau
-document.querySelector('.team-avatar').addEventListener('change', e => {
-  const file = e.target.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    document.getElementById('avatar-preview').src = e.target.result;
-  };
-  reader.readAsDataURL(file);
-});
-
-// Teamaccount erstellen
-document.querySelector('.team-create-form').addEventListener('submit', e => {
-  e.preventDefault();
-  if(!currentUser || !currentUser.permissions.assignRoles){
-    alert('Keine Berechtigung, Teamaccounts zu erstellen!');
-    return;
-  }
-  const name = e.target.querySelector('.team-name').value.trim();
-  const role = e.target.querySelector('.team-role').value.trim();
-  const pass = e.target.querySelector('.team-pass').value.trim();
-  const avatar = document.getElementById('avatar-preview').src || 'sunriserp.png';
-  const perms = {
-    editApplications: e.target.querySelector('.perm-apps').checked,
-    editBans: e.target.querySelector('.perm-bans').checked,
-    assignRoles: true,
-    deleteTeam: e.target.querySelector('.perm-team').checked
-  };
-  if(!name || !role || !pass){
-    alert('Bitte alle Felder ausfüllen!');
-    return;
-  }
-  if(teamMembers.find(m => m.name.toLowerCase() === name.toLowerCase())){
-    alert('Name bereits vergeben!');
-    return;
-  }
-  teamMembers.push(createTeamMember(name, role, pass, avatar, perms));
-  saveData();
-  alert('Teamaccount erstellt!');
-  e.target.reset();
-  document.getElementById('avatar-preview').src = 'sunriserp.png';
-  renderPanel();
-});
-
-// Login
-document.querySelector('.login-form').addEventListener('submit', e => {
-  e.preventDefault();
-  const user = e.target.querySelector('.login-user').value.trim();
-  const pass = e.target.querySelector('.login-pass').value.trim();
-  const found = teamMembers.find(m => m.name === user && m.pass === pass);
-  if(!found){
-    alert('Falscher Benutzername oder Passwort!');
-    return;
-  }
-  currentUser = found;
-  alert(`Willkommen ${currentUser.name}!`);
-  e.target.style.display = 'none';
-  document.querySelector('.panel-content').style.display = 'block';
-  renderPanel();
-});
-
-/* ----------------- BEARBEITEN & LÖSCHEN ----------------- */
-function editBewerbung(index){
-  const b = bewerbungen[index];
-  if(!currentUser || !currentUser.permissions.editApplications){
-    alert('Keine Berechtigung!');
-    return;
-  }
-  const newNotiz = prompt('Notiz bearbeiten:', b.notiz);
-  if(newNotiz !== null) b.notiz = newNotiz;
-  const newStatus = prompt('Status ändern (offen/gesehen/abgelehnt/angenommen):', b.status);
-  if(newStatus !== null) b.status = newStatus.toLowerCase();
-  b.bearbeiter = currentUser.name;
-  saveData();
-  renderPanel();
-}
-function deleteBewerbung(index){
-  if(!currentUser || !currentUser.permissions.editApplications){
-    alert('Keine Berechtigung!');
-    return;
-  }
-  if(confirm('Bewerbung wirklich löschen?')){
-    bewerbungen.splice(index,1);
-    saveData();
-    renderPanel();
-  }
-}
-function editEntbannung(index){
-  const e = entbannungen[index];
-  if(!currentUser || !currentUser.permissions.editBans){
-    alert('Keine Berechtigung!');
-    return;
-  }
-  const newNotiz = prompt('Notiz bearbeiten:', e.notiz);
-  if(newNotiz !== null) e.notiz = newNotiz;
-  const newStatus = prompt('Status ändern (offen/gesehen/abgelehnt/angenommen):', e.status);
-  if(newStatus !== null) e.status = newStatus.toLowerCase();
-  e.bearbeiter = currentUser.name;
-  saveData();
-  renderPanel();
-}
-function deleteEntbannung(index){
-  if(!currentUser || !currentUser.permissions.editBans){
-    alert('Keine Berechtigung!');
-    return;
-  }
-  if(confirm('Entbannungsantrag wirklich löschen?')){
-    entbannungen.splice(index,1);
-    saveData();
-    renderPanel();
-  }
-}
-function deleteTeamMember(index){
-  if(!currentUser || !currentUser.permissions.deleteTeam){
-    alert('Keine Berechtigung!');
-    return;
-  }
-  if(confirm(`Teammitglied "${teamMembers[index].name}" wirklich löschen?`)){
-    teamMembers.splice(index,1);
-    saveData();
-    renderPanel();
-  }
-}
-
-/* ----------------- SONSTIGES ----------------- */
-function bulkBewerbungenSeen(){
-  if(!currentUser || !currentUser.permissions.editApplications){
-    alert('Keine Berechtigung!');
-    return;
-  }
-  bewerbungen.forEach(b => b.status = 'gesehen');
-  saveData();
-  renderPanel();
-}
-
-/* ----------------- SPEICHERN ----------------- */
 function saveData(){
   localStorage.setItem('teamMembers', JSON.stringify(teamMembers));
   localStorage.setItem('bewerbungen', JSON.stringify(bewerbungen));
   localStorage.setItem('entbannungen', JSON.stringify(entbannungen));
   renderTeam();
 }
-
-saveData();
-renderTeam();
-togglePositionField();
-
 </script>
 
 </body>
