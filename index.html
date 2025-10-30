@@ -4,26 +4,109 @@
 <meta charset="UTF-8">
 <title>SunriseRP – Adminpanel</title>
 <style>
-  body {font-family:'Poppins',sans-serif;margin:0;color:#fff;background:url('sunriserp.png') center/cover fixed no-repeat;}
-  header {background:rgba(0,0,0,0.6);text-align:center;padding:20px;font-size:24px;letter-spacing:2px;text-shadow:0 0 10px #ffbb55;}
-  nav {text-align:center;background:rgba(0,0,0,0.4);padding:10px;}
-  nav button {background:rgba(255,255,255,0.15);border:none;color:#fff;padding:10px 20px;margin:5px;border-radius:5px;cursor:pointer;transition:.3s;}
-  nav button:hover {background:rgba(255,200,120,0.4);}
-  section {display:none;padding:20px;margin:20px auto;max-width:1000px;background:rgba(0,0,0,0.55);border-radius:10px;}
-  section.active {display:block;}
-  h2 {text-align:center;color:#ffbb55;text-shadow:0 0 10px #ffbb55;}
-  table {width:100%;border-collapse:collapse;color:#fff;}
-  th,td {border:1px solid rgba(255,255,255,0.3);padding:8px;}
-  input,select,textarea,button {padding:8px;border:none;border-radius:4px;margin:5px;}
-  textarea {width:95%;min-height:60px;}
-  .avatar{border-radius:50%;width:50px;}
-  .save-btn{background:#ffbb55;color:#000;cursor:pointer;}
-  .save-btn:hover{background:#ffd480;}
+  /* Grundlayout */
+  body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    color: #fff;
+    background: url('sunriserp.png') center/cover fixed no-repeat;
+  }
+
+  header {
+    background: rgba(0, 0, 0, 0.6);
+    text-align: center;
+    padding: 20px;
+    font-size: 24px;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px #ffbb55;
+  }
+
+  nav {
+    text-align: center;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 10px;
+  }
+
+  nav button {
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    color: #fff;
+    padding: 10px 20px;
+    margin: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+
+  nav button:hover {
+    background: rgba(255, 200, 120, 0.4);
+  }
+
+  section {
+    display: none;
+    padding: 20px;
+    margin: 20px auto;
+    max-width: 1000px;
+    background: rgba(0, 0, 0, 0.55);
+    border-radius: 10px;
+  }
+
+  section.active {
+    display: block;
+  }
+
+  h2 {
+    text-align: center;
+    color: #ffbb55;
+    text-shadow: 0 0 10px #ffbb55;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    color: #fff;
+  }
+
+  th, td {
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 8px;
+  }
+
+  input, select, textarea, button {
+    padding: 8px;
+    border: none;
+    border-radius: 4px;
+    margin: 5px 0;
+  }
+
+  textarea {
+    width: 95%;
+    min-height: 60px;
+  }
+
+  .avatar {
+    border-radius: 50%;
+    width: 50px;
+  }
+
+  .save-btn {
+    background: #ffbb55;
+    color: #000;
+    cursor: pointer;
+  }
+
+  .save-btn:hover {
+    background: #ffd480;
+  }
+
+  form > div {
+    margin-bottom: 10px;
+  }
 </style>
 </head>
 <body>
 
-<header>🌅 Sunrise Roleplay – Minecraft Rp auf höchstem Niveau</header>
+<header>🌅 Sunrise Roleplay – Minecraft RP auf höchstem Niveau</header>
 
 <nav>
   <button onclick="showSection('regelwerk')">Regelwerk</button>
@@ -36,15 +119,13 @@
 <!-- Regelwerk -->
 <section id="regelwerk" class="active">
   <h2>Regelwerk SunriseRP</h2>
-  <pre style="white-space:pre-wrap;font-family:inherit;">
-Regelwerk Sunrise RP
-- OOC Talk ist strengstens untersagt und wird mit Adminjail bestraft
-- RDM ist verboten
-- VDM ist verboten
+  <pre style="white-space: pre-wrap; font-family: inherit;">
+- OOC Talk ist strengstens untersagt
+- RDM und VDM verboten
 - Fail RP vermeiden
-- Sexistische, rassistische, diskriminierende Aussagen verboten
+- Diskriminierende Aussagen verboten
 - Alles IC betrachten
-- Deutsch sprechen & funktionierendes Mikrofon notwendig
+- Deutsch sprechen & Mikrofon notwendig
 - Keine Zweitaccounts
 - Bestechung verboten
 - Unrealistische Wörter verboten
@@ -52,7 +133,6 @@ Regelwerk Sunrise RP
 - Längeres AFK rumstehen verboten
 - Bugusing, Hacks, Auto Clicker verboten
 - Support nicht ausnutzen
-- Aufnahmen im Support verboten
 - Item-Erstattung nur mit Inventar sichtbar & Clip
 - Bei Einfrieren Support kontaktieren
 - Raub realistisch durchführen
@@ -75,25 +155,32 @@ Regelwerk Sunrise RP
 - Servergespräche nicht im RP
 - Sprinten = Fail RP
 - Waffen realistisch nutzen
-</pre>
+  </pre>
 </section>
 
 <!-- Team -->
 <section id="team">
   <h2>Teammitglieder</h2>
-  <table id="teamTable"><thead><tr><th>Avatar</th><th>Name</th><th>Rolle</th></tr></thead><tbody></tbody></table>
+  <table class="team-table">
+    <thead>
+      <tr><th>Avatar</th><th>Name</th><th>Rolle</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 </section>
 
 <!-- Bewerbung -->
 <section id="bewerbung">
   <h2>Bewerbung einreichen</h2>
-  <form id="bewerbungForm">
-    <select id="bewerbungsArt" required>
-      <option value="Fraktionsbewerbung">Fraktionsbewerbung</option>
-      <option value="Teambewerbung">Teambewerbung</option>
-    </select>
-    <div id="teamPositionen" style="display:none;">
-      <select id="bewerbungPosition">
+  <form class="bewerbung-form">
+    <div>
+      <select class="bewerbungs-art" required>
+        <option value="Fraktionsbewerbung">Fraktionsbewerbung</option>
+        <option value="Teambewerbung">Teambewerbung</option>
+      </select>
+    </div>
+    <div class="team-positionen" style="display:none;">
+      <select class="bewerbung-position">
         <option value="Developer">Developer</option>
         <option value="Supporter">Supporter</option>
         <option value="Builder">Builder</option>
@@ -101,10 +188,18 @@ Regelwerk Sunrise RP
         <option value="Content Creator">Content Creator</option>
       </select>
     </div>
-    <input type="text" id="bewerbungDiscord" placeholder="Discord Name" required>
-    <input type="text" id="bewerbungMinecraft" placeholder="Minecraft Name" required>
-    <input type="email" id="bewerbungEmail" placeholder="E-Mail" required>
-    <textarea id="bewerbungText" placeholder="Bewerbungstext" required></textarea>
+    <div>
+      <input type="text" class="bewerbung-discord" placeholder="Discord Name" required>
+    </div>
+    <div>
+      <input type="text" class="bewerbung-minecraft" placeholder="Minecraft Name" required>
+    </div>
+    <div>
+      <input type="email" class="bewerbung-email" placeholder="E-Mail" required>
+    </div>
+    <div>
+      <textarea class="bewerbung-text" placeholder="Bewerbungstext" required></textarea>
+    </div>
     <button type="submit">Absenden</button>
   </form>
 </section>
@@ -112,10 +207,16 @@ Regelwerk Sunrise RP
 <!-- Entbannung -->
 <section id="entbannung">
   <h2>Entbannungsantrag</h2>
-  <form id="entbannungForm">
-    <input type="text" id="entbannungMinecraft" placeholder="Minecraft Name" required>
-    <input type="email" id="entbannungEmail" placeholder="E-Mail" required>
-    <textarea id="entbannungText" placeholder="Begründung" required></textarea>
+  <form class="entbannung-form">
+    <div>
+      <input type="text" class="entbannung-minecraft" placeholder="Minecraft Name" required>
+    </div>
+    <div>
+      <input type="email" class="entbannung-email" placeholder="E-Mail" required>
+    </div>
+    <div>
+      <textarea class="entbannung-text" placeholder="Begründung" required></textarea>
+    </div>
     <button type="submit">Absenden</button>
   </form>
 </section>
@@ -123,163 +224,236 @@ Regelwerk Sunrise RP
 <!-- Admin Panel -->
 <section id="panel">
   <h2>Admin Panel</h2>
-  <form id="loginForm">
-    <input type="text" id="loginUser" placeholder="Benutzername" required>
-    <input type="password" id="loginPass" placeholder="Passwort" required>
+  <form class="login-form">
+    <div>
+      <input type="text" class="login-user" placeholder="Benutzername" required>
+    </div>
+    <div>
+      <input type="password" class="login-pass" placeholder="Passwort" required>
+    </div>
     <button type="submit">Login</button>
-    <span id="loginMessage"></span>
+    <span class="login-message"></span>
   </form>
 
-  <div id="panelContent" style="display:none;">
+  <div class="panel-content" style="display:none;">
     <h3>Bewerbungen</h3>
-    <table id="panelBewerbungen">
-      <thead><tr><th>Art</th><th>Discord</th><th>Minecraft</th><th>Email</th><th>Position</th><th>Text</th><th>Notiz</th><th>Status</th><th>Bearbeitet von</th></tr></thead>
+    <table class="panel-bewerbungen">
+      <thead>
+        <tr>
+          <th>Art</th><th>Discord</th><th>Minecraft</th><th>Email</th>
+          <th>Position</th><th>Text</th><th>Notiz</th><th>Status</th><th>Bearbeitet von</th>
+        </tr>
+      </thead>
       <tbody></tbody>
     </table>
 
     <h3>Entbannungsanträge</h3>
-    <table id="panelEntbannungen">
-      <thead><tr><th>Minecraft</th><th>Email</th><th>Text</th><th>Notiz</th><th>Status</th><th>Bearbeitet von</th></tr></thead>
+    <table class="panel-entbannungen">
+      <thead>
+        <tr>
+          <th>Minecraft</th><th>Email</th><th>Text</th><th>Notiz</th><th>Status</th><th>Bearbeitet von</th>
+        </tr>
+      </thead>
       <tbody></tbody>
     </table>
 
     <h3>Teamverwaltung</h3>
-    <form id="teamCreateForm">
-      <input type="text" id="teamName" placeholder="Name" required>
-      <input type="text" id="teamRole" placeholder="Rolle" required>
-      <input type="password" id="teamPass" placeholder="Passwort" required>
-      <input type="file" id="teamAvatar" accept="image/*">
+    <form class="team-create-form">
+      <div>
+        <input type="text" class="team-name" placeholder="Name" required>
+      </div>
+      <div>
+        <input type="text" class="team-role" placeholder="Rolle" required>
+      </div>
+      <div>
+        <input type="password" class="team-pass" placeholder="Passwort" required>
+      </div>
+      <div>
+        <input type="file" class="team-avatar" accept="image/*">
+      </div>
       <button type="submit">Teamaccount erstellen</button>
     </form>
-    <table id="teamAccountsTable">
-      <thead><tr><th>Name</th><th>Rolle</th><th>Avatar</th><th>Aktion</th></tr></thead>
+    <table class="team-accounts-table">
+      <thead>
+        <tr><th>Name</th><th>Rolle</th><th>Avatar</th><th>Aktion</th></tr>
+      </thead>
       <tbody></tbody>
     </table>
-    <button class="save-btn" onclick="saveData()">Änderungen speichern</button>
+    <button class="save-btn">Änderungen speichern</button>
   </div>
 </section>
 
 <script>
-let bewerbungen=JSON.parse(localStorage.getItem('bewerbungen'))||[];
-let entbannungen=JSON.parse(localStorage.getItem('entbannungen'))||[];
-let teamMembers=JSON.parse(localStorage.getItem('teamMembers'))||[
+/* --- Datenverwaltung --- */
+let bewerbungen = JSON.parse(localStorage.getItem('bewerbungen')) || [];
+let entbannungen = JSON.parse(localStorage.getItem('entbannungen')) || [];
+let teamMembers = JSON.parse(localStorage.getItem('teamMembers')) || [
   {name:'Leitung',role:'Leitung',pass:'LeitungsebeneSunriseRp1457243867561923',avatar:'sunriserp.png',permissions:{editApplications:true,editBans:true,assignRoles:true,deleteTeam:true}}
 ];
-let currentUser=null;
+let currentUser = null;
 
+/* --- Navigation --- */
 function showSection(id){
- document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));
- document.getElementById(id).classList.add('active');
+  document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
 }
 
-document.getElementById('bewerbungsArt').addEventListener('change',()=>{
- document.getElementById('teamPositionen').style.display=document.getElementById('bewerbungsArt').value==='Teambewerbung'?'block':'none';
-});
-
+/* --- Team anzeigen --- */
 function renderTeam(){
- const tbody=document.querySelector('#teamTable tbody'); tbody.innerHTML='';
- teamMembers.forEach(m=>tbody.innerHTML+=`<tr><td><img class="avatar" src="${m.avatar}"></td><td>${m.name}</td><td>${m.role}</td></tr>`);
+  const tbody=document.querySelector('.team-table tbody'); 
+  tbody.innerHTML='';
+  teamMembers.forEach(m=>{
+    tbody.innerHTML+=`<tr>
+      <td><img class="avatar" src="${m.avatar}"></td>
+      <td>${m.name}</td>
+      <td>${m.role}</td>
+    </tr>`;
+  });
 }
 renderTeam();
 
-document.getElementById('bewerbungForm').addEventListener('submit',e=>{
- e.preventDefault();
- const art=bewerbungsArt.value,pos=art==='Teambewerbung'?bewerbungPosition.value:'-';
- bewerbungen.push({art,discord:bewerbungDiscord.value,minecraft:bewerbungMinecraft.value,email:bewerbungEmail.value,position:pos,text:bewerbungText.value,notiz:'',status:'offen',bearbeiter:''});
- saveData(); e.target.reset(); alert("Bewerbung eingereicht!");
+/* --- Bewerbungsformular --- */
+const artSelect=document.querySelector('.bewerbungs-art');
+artSelect.addEventListener('change',()=>{
+  document.querySelector('.team-positionen').style.display = artSelect.value==='Teambewerbung'?'block':'none';
 });
 
-document.getElementById('entbannungForm').addEventListener('submit',e=>{
- e.preventDefault();
- entbannungen.push({minecraft:entbannungMinecraft.value,email:entbannungEmail.value,text:entbannungText.value,notiz:'',status:'offen',bearbeiter:''});
- saveData(); e.target.reset(); alert("Entbannungsantrag eingereicht!");
+document.querySelector('.bewerbung-form').addEventListener('submit', e=>{
+  e.preventDefault();
+  const art = document.querySelector('.bewerbungs-art').value;
+  const pos = art==='Teambewerbung'?document.querySelector('.bewerbung-position').value:'-';
+  bewerbungen.push({
+    art,
+    discord: document.querySelector('.bewerbung-discord').value,
+    minecraft: document.querySelector('.bewerbung-minecraft').value,
+    email: document.querySelector('.bewerbung-email').value,
+    position: pos,
+    text: document.querySelector('.bewerbung-text').value,
+    notiz: '',
+    status: 'offen',
+    bearbeiter: ''
+  });
+  saveData();
+  e.target.reset();
+  alert("Bewerbung eingereicht!");
 });
 
-document.getElementById('loginForm').addEventListener('submit',e=>{
- e.preventDefault();
- const user=loginUser.value,pass=loginPass.value;
- const t=teamMembers.find(m=>m.name===user && m.pass===pass);
- if(t){
-   currentUser=t;
-   document.getElementById('panelContent').style.display='block';
-   document.getElementById('loginMessage').textContent='Erfolgreich eingeloggt als '+t.name;
-   renderPanel();
- } else document.getElementById('loginMessage').textContent='Falsche Daten';
+/* --- Entbannung --- */
+document.querySelector('.entbannung-form').addEventListener('submit', e=>{
+  e.preventDefault();
+  entbannungen.push({
+    minecraft: document.querySelector('.entbannung-minecraft').value,
+    email: document.querySelector('.entbannung-email').value,
+    text: document.querySelector('.entbannung-text').value,
+    notiz:'',
+    status:'offen',
+    bearbeiter:''
+  });
+  saveData();
+  e.target.reset();
+  alert("Entbannungsantrag eingereicht!");
 });
 
-function renderPanel(){renderPanelBewerbungen();renderPanelEntbannungen();renderTeamAccounts();}
+/* --- Admin Login --- */
+document.querySelector('.login-form').addEventListener('submit', e=>{
+  e.preventDefault();
+  const user = document.querySelector('.login-user').value;
+  const pass = document.querySelector('.login-pass').value;
+  const t = teamMembers.find(m=>m.name===user && m.pass===pass);
+  if(t){
+    currentUser=t;
+    document.querySelector('.panel-content').style.display='block';
+    document.querySelector('.login-message').textContent='Erfolgreich eingeloggt als '+t.name;
+    renderPanel();
+  } else {
+    document.querySelector('.login-message').textContent='Falsche Daten';
+  }
+});
+
+/* --- Panel Rendering --- */
+function renderPanel(){
+  renderPanelBewerbungen();
+  renderPanelEntbannungen();
+  renderTeamAccounts();
+}
 
 function renderPanelBewerbungen(){
- const tb=document.querySelector('#panelBewerbungen tbody'); tb.innerHTML='';
- bewerbungen.forEach((b,i)=>{
-  tb.innerHTML+=`<tr>
-  <td>${b.art}</td><td>${b.discord}</td><td>${b.minecraft}</td><td>${b.email}</td><td>${b.position}</td><td>${b.text}</td>
-  <td><textarea id="bNotiz${i}">${b.notiz}</textarea></td>
-  <td><button onclick="toggleBStatus(${i})" ${!currentUser.permissions.editApplications?'disabled':''}>${b.status}</button></td>
-  <td>${b.bearbeiter||'-'}</td>
-  </tr>`;
- });
+  const tb=document.querySelector('.panel-bewerbungen tbody'); tb.innerHTML='';
+  bewerbungen.forEach((b,i)=>{
+    tb.innerHTML+=`<tr>
+      <td>${b.art}</td><td>${b.discord}</td><td>${b.minecraft}</td><td>${b.email}</td><td>${b.position}</td><td>${b.text}</td>
+      <td><textarea id="bNotiz${i}">${b.notiz}</textarea></td>
+      <td><button onclick="toggleBStatus(${i})" ${!currentUser.permissions.editApplications?'disabled':''}>${b.status}</button></td>
+      <td>${b.bearbeiter||'-'}</td>
+    </tr>`;
+  });
 }
 
 function toggleBStatus(i){
- if(!currentUser.permissions.editApplications){alert("Keine Berechtigung!");return;}
- bewerbungen[i].status = bewerbungen[i].status==='offen'?'gesehen':'offen';
- bewerbungen[i].bearbeiter = currentUser.name;
- saveData(); renderPanelBewerbungen();
+  if(!currentUser.permissions.editApplications){alert("Keine Berechtigung!");return;}
+  bewerbungen[i].status = bewerbungen[i].status==='offen'?'gesehen':'offen';
+  bewerbungen[i].bearbeiter=currentUser.name;
+  saveData(); renderPanelBewerbungen();
 }
 
 function renderPanelEntbannungen(){
- const tb=document.querySelector('#panelEntbannungen tbody'); tb.innerHTML='';
- entbannungen.forEach((e,i)=>{
-  tb.innerHTML+=`<tr>
-  <td>${e.minecraft}</td><td>${e.email}</td><td>${e.text}</td>
-  <td><textarea id="eNotiz${i}">${e.notiz}</textarea></td>
-  <td><button onclick="toggleEStatus(${i})" ${!currentUser.permissions.editBans?'disabled':''}>${e.status}</button></td>
-  <td>${e.bearbeiter||'-'}</td>
-  </tr>`;
- });
+  const tb=document.querySelector('.panel-entbannungen tbody'); tb.innerHTML='';
+  entbannungen.forEach((e,i)=>{
+    tb.innerHTML+=`<tr>
+      <td>${e.minecraft}</td><td>${e.email}</td><td>${e.text}</td>
+      <td><textarea id="eNotiz${i}">${e.notiz}</textarea></td>
+      <td><button onclick="toggleEStatus(${i})" ${!currentUser.permissions.editBans?'disabled':''}>${e.status}</button></td>
+      <td>${e.bearbeiter||'-'}</td>
+    </tr>`;
+  });
 }
 
 function toggleEStatus(i){
- if(!currentUser.permissions.editBans){alert("Keine Berechtigung!");return;}
- entbannungen[i].status = entbannungen[i].status==='offen'?'gesehen':'offen';
- entbannungen[i].bearbeiter = currentUser.name;
- saveData(); renderPanelEntbannungen();
+  if(!currentUser.permissions.editBans){alert("Keine Berechtigung!");return;}
+  entbannungen[i].status = entbannungen[i].status==='offen'?'gesehen':'offen';
+  entbannungen[i].bearbeiter=currentUser.name;
+  saveData(); renderPanelEntbannungen();
 }
 
-document.getElementById('teamCreateForm').addEventListener('submit',e=>{
- e.preventDefault();
- if(!currentUser.permissions.assignRoles){alert("Keine Berechtigung!"); return;}
- const name=teamName.value,role=teamRole.value,pass=teamPass.value;
- const file=teamAvatar.files[0]; let avatar='default.png';
- if(file) avatar=URL.createObjectURL(file);
- teamMembers.push({name,role,pass,avatar,permissions:{editApplications:false,editBans:false,assignRoles:false,deleteTeam:false}});
- saveData(); renderTeam(); renderTeamAccounts(); e.target.reset();
+/* --- Teamverwaltung --- */
+document.querySelector('.team-create-form').addEventListener('submit', e=>{
+  e.preventDefault();
+  if(!currentUser.permissions.assignRoles){alert("Keine Berechtigung!"); return;}
+  const name=document.querySelector('.team-name').value;
+  const role=document.querySelector('.team-role').value;
+  const pass=document.querySelector('.team-pass').value;
+  const file=document.querySelector('.team-avatar').files[0]; 
+  let avatar='default.png';
+  if(file) avatar=URL.createObjectURL(file);
+  teamMembers.push({name,role,pass,avatar,permissions:{editApplications:false,editBans:false,assignRoles:false,deleteTeam:false}});
+  saveData(); renderTeam(); renderTeamAccounts(); e.target.reset();
 });
 
 function renderTeamAccounts(){
- const tb=document.querySelector('#teamAccountsTable tbody'); tb.innerHTML='';
- teamMembers.forEach((t,i)=>{
-  tb.innerHTML+=`<tr>
-  <td>${t.name}</td><td>${t.role}</td><td><img class="avatar" src="${t.avatar}"></td>
-  <td><button onclick="deleteTeam(${i})" ${!currentUser.permissions.deleteTeam?'disabled':''}>Löschen</button></td>
-  </tr>`;
- });
+  const tb=document.querySelector('.team-accounts-table tbody'); tb.innerHTML='';
+  teamMembers.forEach((t,i)=>{
+    tb.innerHTML+=`<tr>
+      <td>${t.name}</td><td>${t.role}</td><td><img class="avatar" src="${t.avatar}"></td>
+      <td><button onclick="deleteTeam(${i})" ${!currentUser.permissions.deleteTeam?'disabled':''}>Löschen</button></td>
+    </tr>`;
+  });
 }
 
 function deleteTeam(i){
- if(!currentUser.permissions.deleteTeam){alert("Keine Berechtigung!"); return;}
- if(confirm(`Teammitglied ${teamMembers[i].name} löschen?`)){teamMembers.splice(i,1); saveData(); renderTeamAccounts(); renderTeam();}
+  if(!currentUser.permissions.deleteTeam){alert("Keine Berechtigung!"); return;}
+  if(confirm(`Teammitglied ${teamMembers[i].name} löschen?`)){teamMembers.splice(i,1); saveData(); renderTeamAccounts(); renderTeam();}
 }
 
+/* --- Daten speichern --- */
 function saveData(){
- // Notizen aktualisieren
- bewerbungen.forEach((b,i)=>b.notiz=document.getElementById(`bNotiz${i}`)?.value||'');
- entbannungen.forEach((e,i)=>e.notiz=document.getElementById(`eNotiz${i}`)?.value||'');
- localStorage.setItem('bewerbungen',JSON.stringify(bewerbungen));
- localStorage.setItem('entbannungen',JSON.stringify(entbannungen));
- localStorage.setItem('teamMembers',JSON.stringify(teamMembers));
+  bewerbungen.forEach((b,i)=>b.notiz=document.getElementById(`bNotiz${i}`)?.value||'');
+  entbannungen.forEach((e,i)=>e.notiz=document.getElementById(`eNotiz${i}`)?.value||'');
+  localStorage.setItem('bewerbungen', JSON.stringify(bewerbungen));
+  localStorage.setItem('entbannungen', JSON.stringify(entbannungen));
+  localStorage.setItem('teamMembers', JSON.stringify(teamMembers));
 }
+
+document.querySelector('.save-btn').addEventListener('click', saveData);
 </script>
 
 </body>
