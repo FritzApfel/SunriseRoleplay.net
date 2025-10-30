@@ -34,7 +34,6 @@
   <button onclick="showSection('panel')">Admin Panel</button>
 </nav>
 
-<!-- Regelwerk -->
 <section id="regelwerk" class="active">
   <h2>Regelwerk SunriseRP</h2>
   <pre style="white-space: pre-wrap; font-family: inherit;">
@@ -61,7 +60,6 @@
   </pre>
 </section>
 
-<!-- Team -->
 <section id="team">
   <h2>Teammitglieder</h2>
   <table class="team-table">
@@ -72,7 +70,6 @@
   </table>
 </section>
 
-<!-- Bewerbung -->
 <section id="bewerbung">
   <h2>Bewerbung einreichen</h2>
   <form class="bewerbung-form">
@@ -99,7 +96,6 @@
   </form>
 </section>
 
-<!-- Entbannung -->
 <section id="entbannung">
   <h2>Entbannungsantrag</h2>
   <form class="entbannung-form">
@@ -110,7 +106,6 @@
   </form>
 </section>
 
-<!-- Admin Panel -->
 <section id="panel">
   <h2>Admin Panel</h2>
   <form class="login-form">
@@ -161,54 +156,34 @@
 </section>
 
 <script>
-/* ----------------- KLASSEN ----------------- */
-class TeamMember {
-  constructor(name, role, pass, avatar='sunriserp.png', permissions={}) {
-    this.name = name;
-    this.role = role;
-    this.pass = pass;
-    this.avatar = avatar;
-    this.permissions = {
-      editApplications: permissions.editApplications || false,
-      editBans: permissions.editBans || false,
-      assignRoles: permissions.assignRoles || false,
-      deleteTeam: permissions.deleteTeam || false
-    };
-  }
-}
-
-class Bewerbung {
-  constructor(art, discord, minecraft, email, position, text){
-    this.art = art;
-    this.discord = discord;
-    this.minecraft = minecraft;
-    this.email = email;
-    this.position = position;
-    this.text = text;
-    this.notiz = '';
-    this.status = 'offen';
-    this.bearbeiter = '';
-  }
-}
-
-class Entbannung {
-  constructor(minecraft, email, text){
-    this.minecraft = minecraft;
-    this.email = email;
-    this.text = text;
-    this.notiz = '';
-    this.status = 'offen';
-    this.bearbeiter = '';
-  }
-}
-
-/* ----------------- DATEN ----------------- */
-let teamMembers = JSON.parse(localStorage.getItem('teamMembers'))?.map(m=>Object.assign(new TeamMember(), m)) || [
-  new TeamMember('Leitung','Leitung','Leitung123','sunriserp.png',{editApplications:true,editBans:true,assignRoles:true,deleteTeam:true})
-];
-let bewerbungen = JSON.parse(localStorage.getItem('bewerbungen'))?.map(b=>Object.assign(new Bewerbung(),b)) || [];
-let entbannungen = JSON.parse(localStorage.getItem('entbannungen'))?.map(e=>Object.assign(new Entbannung(),e)) || [];
+/* ----------------- DATEN UND KLASSEN IN SCRIPT ----------------- */
+let teamMembers = JSON.parse(localStorage.getItem('teamMembers')) || [];
+let bewerbungen = JSON.parse(localStorage.getItem('bewerbungen')) || [];
+let entbannungen = JSON.parse(localStorage.getItem('entbannungen')) || [];
 let currentUser = null;
+
+// TeamMember erstellen
+function createTeamMember(name, role, pass, avatar='sunriserp.png', permissions={editApplications:true,editBans:true,assignRoles:true,deleteTeam:true}) {
+  return {name, role, pass, avatar, permissions};
+}
+
+// Bewerbung erstellen
+function createBewerbung(art, discord, minecraft, email, position, text){
+  return {art, discord, minecraft, email, position, text, notiz:'', status:'offen', bearbeiter:''};
+}
+
+// Entbannung erstellen
+function createEntbannung(minecraft, email, text){
+  return {minecraft, email, text, notiz:'', status:'offen', bearbeiter:''};
+}
+
+// Standard-Admin
+if(!teamMembers.find(m=>m.name==='Leitung')){
+    teamMembers.unshift(createTeamMember('Leitung','Leitung','Leitung123','sunriserp.png',{
+        editApplications:true, editBans:true, assignRoles:true, deleteTeam:true
+    }));
+    saveData();
+}
 
 /* ----------------- NAVIGATION ----------------- */
 function showSection(id){
@@ -223,11 +198,13 @@ function renderTeam(){
   const tbody=document.querySelector('.team-table tbody'); tbody.innerHTML='';
   teamMembers.forEach(m=>tbody.innerHTML+=`<tr><td><img class="avatar" src="${m.avatar}"></td><td>${m.name}</td><td>${m.role}</td></tr>`);
 }
+
 function renderPanel(){
   renderPanelBewerbungen();
   renderPanelEntbannungen();
   renderTeamAccounts();
 }
+
 function renderPanelBewerbungen(){
   const tb=document.querySelector('.panel-bewerbungen tbody'); tb.innerHTML='';
   bewerbungen.forEach((b,i)=>{
@@ -239,6 +216,7 @@ function renderPanelBewerbungen(){
     </tr>`;
   });
 }
+
 function renderPanelEntbannungen(){
   const tb=document.querySelector('.panel-entbannungen tbody'); tb.innerHTML='';
   entbannungen.forEach((b,i)=>{
@@ -250,6 +228,7 @@ function renderPanelEntbannungen(){
     </tr>`;
   });
 }
+
 function renderTeamAccounts(){
   const tb=document.querySelector('.team-accounts-table tbody'); tb.innerHTML='';
   teamMembers.forEach((m,i)=>{
@@ -297,43 +276,44 @@ document.querySelector('.bewerbung-form').addEventListener('submit', e=>{
   let email=document.querySelector('.bewerbung-email').value;
   let position= document.querySelector('.bewerbung-position')?.value || '';
   let text=document.querySelector('.bewerbung-text').value;
-  bewerbungen.push(new Bewerbung(art,discord,minecraft,email,position,text));
-  saveData();
-  alert('Bewerbung eingereicht!'); e.target.reset();
+  bewerbungen.push(createBewerbung(art,discord,minecraft,email,position,text));
+  saveData(); alert('Bewerbung eingereicht!'); e.target.reset();
 });
 document.querySelector('.entbannung-form').addEventListener('submit', e=>{
   e.preventDefault();
   let minecraft=document.querySelector('.entbannung-minecraft').value;
   let email=document.querySelector('.entbannung-email').value;
   let text=document.querySelector('.entbannung-text').value;
-  entbannungen.push(new Entbannung(minecraft,email,text));
-  saveData();
-  alert('Entbannungsantrag eingereicht!'); e.target.reset();
+  entbannungen.push(createEntbannung(minecraft,email,text));
+  saveData(); alert('Entbannungsantrag eingereicht!'); e.target.reset();
 });
 document.querySelector('.login-form').addEventListener('submit', e=>{
   e.preventDefault();
   let user=document.querySelector('.login-user').value;
   let pass=document.querySelector('.login-pass').value;
-  let match=teamMembers.find(m=>m.name===user && m.pass===pass);
-  if(match){ currentUser=match; document.querySelector('.panel-content').style.display='block'; e.target.style.display='none'; renderPanel(); }
-  else document.querySelector('.login-message').textContent='Falscher Benutzer oder Passwort!';
+  let member=teamMembers.find(m=>m.name===user && m.pass===pass);
+  const msg=document.querySelector('.login-message');
+  if(member){ currentUser=member; document.querySelector('.panel-content').style.display='block'; msg.textContent=''; renderPanel(); } 
+  else{ msg.textContent='Login fehlgeschlagen'; msg.style.color='red'; }
 });
 document.querySelector('.team-create-form').addEventListener('submit', e=>{
   e.preventDefault();
+  if(!currentUser?.permissions.assignRoles){ alert('Keine Berechtigung'); return; }
   let name=document.querySelector('.team-name').value;
   let role=document.querySelector('.team-role').value;
   let pass=document.querySelector('.team-pass').value;
-  let avatar=document.querySelector('.team-avatar').files[0] ? URL.createObjectURL(document.querySelector('.team-avatar').files[0]) : 'sunriserp.png';
-  teamMembers.push(new TeamMember(name,role,pass,avatar,{editApplications:true,editBans:true,assignRoles:true,deleteTeam:true}));
-  saveData(); renderTeamAccounts(); renderTeam(); e.target.reset();
-});
-document.querySelector('.save-btn').addEventListener('click', ()=>{
-  bewerbungen.forEach((b,i)=>b.notiz=document.getElementById(`notiz-${i}`).value);
-  entbannungen.forEach((b,i)=>b.notiz=document.getElementById(`e-notiz-${i}`).value);
-  saveData(); alert('Daten gespeichert!');
+  let avatar='sunriserp.png';
+  let file=document.querySelector('.team-avatar').files[0];
+  if(file){ let reader=new FileReader(); reader.onload=()=>{ teamMembers.push(createTeamMember(name,role,pass,reader.result)); saveData(); renderTeamAccounts(); renderTeam(); e.target.reset(); }; reader.readAsDataURL(file); }
+  else{ teamMembers.push(createTeamMember(name,role,pass)); saveData(); renderTeamAccounts(); renderTeam(); e.target.reset(); }
 });
 
-/* ----------------- INIT ----------------- */
+/* ----------------- DYNAMISCHE FORM ANPASSUNG ----------------- */
+document.querySelector('.bewerbungs-art').addEventListener('change', e=>{
+  document.querySelector('.team-positionen').style.display = e.target.value==='Teambewerbung'?'block':'none';
+});
+
+/* ----------------- INITIAL RENDER ----------------- */
 renderTeam();
 </script>
 
