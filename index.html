@@ -4,86 +4,86 @@
 <meta charset="UTF-8">
 <title>SunriseRP – Adminpanel</title>
 <style>
-  /* ----------------- GLOBAL ----------------- */
-  body {
-    font-family: 'Poppins', sans-serif;
-    margin: 0;
-    color: #fff;
-    background: url('sunriserp.png') center/cover fixed no-repeat;
-  }
-  header {
-    background: rgba(0,0,0,0.6);
-    text-align: center;
-    padding: 20px;
-    font-size: 24px;
-    letter-spacing: 2px;
-    text-shadow: 0 0 10px #ffbb55;
-  }
-  nav {
-    text-align: center;
-    background: rgba(0,0,0,0.4);
-    padding: 10px;
-  }
-  nav button {
-    background: rgba(255,255,255,0.15);
-    border: none;
-    color: #fff;
-    padding: 10px 20px;
-    margin: 5px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: 0.3s;
-  }
-  nav button:hover {
-    background: rgba(255,200,120,0.4);
-  }
+/* ----------------- GLOBAL ----------------- */
+body {
+  font-family: 'Poppins', sans-serif;
+  margin: 0;
+  color: #fff;
+  background: url('sunriserp.png') center/cover fixed no-repeat;
+}
+header {
+  background: rgba(0,0,0,0.6);
+  text-align: center;
+  padding: 20px;
+  font-size: 24px;
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px #ffbb55;
+}
+nav {
+  text-align: center;
+  background: rgba(0,0,0,0.4);
+  padding: 10px;
+}
+nav button {
+  background: rgba(255,255,255,0.15);
+  border: none;
+  color: #fff;
+  padding: 10px 20px;
+  margin: 5px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+nav button:hover {
+  background: rgba(255,200,120,0.4);
+}
 
-  section {
-    display: none;
-    padding: 20px;
-    margin: 20px auto;
-    max-width: 1000px;
-    background: rgba(0,0,0,0.55);
-    border-radius: 10px;
-  }
-  section.active { display: block; }
+section {
+  display: none;
+  padding: 20px;
+  margin: 20px auto;
+  max-width: 1000px;
+  background: rgba(0,0,0,0.55);
+  border-radius: 10px;
+}
+section.active { display: block; }
 
-  h2, h3 {
-    text-align: center;
-    color: #ffbb55;
-    text-shadow: 0 0 10px #ffbb55;
-  }
+h2, h3 {
+  text-align: center;
+  color: #ffbb55;
+  text-shadow: 0 0 10px #ffbb55;
+}
 
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    color: #fff;
-  }
-  th, td {
-    border: 1px solid rgba(255,255,255,0.3);
-    padding: 8px;
-    text-align: center;
-  }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  color: #fff;
+}
+th, td {
+  border: 1px solid rgba(255,255,255,0.3);
+  padding: 8px;
+  text-align: center;
+}
 
-  input, select, textarea, button {
-    padding: 8px;
-    border: none;
-    border-radius: 4px;
-    margin: 5px 0;
-    font-family: inherit;
-  }
+input, select, textarea, button {
+  padding: 8px;
+  border: none;
+  border-radius: 4px;
+  margin: 5px 0;
+  font-family: inherit;
+}
 
-  textarea { width: 95%; min-height: 60px; }
-  .avatar { border-radius: 50%; width: 50px; }
+textarea { width: 95%; min-height: 60px; }
+.avatar { border-radius: 50%; width: 50px; }
 
-  .save-btn, .login-form button {
-    background: #ffbb55;
-    color: #000;
-    cursor: pointer;
-  }
-  .save-btn:hover, .login-form button:hover { background: #ffd480; }
+.save-btn, .login-form button {
+  background: #ffbb55;
+  color: #000;
+  cursor: pointer;
+}
+.save-btn:hover, .login-form button:hover { background: #ffd480; }
 
-  form > div { margin-bottom: 10px; }
+form > div { margin-bottom: 10px; }
 </style>
 </head>
 <body>
@@ -219,24 +219,16 @@
 </section>
 
 <script>
-/* ----------------- DATEN ----------------- */
+// ----------------- DATEN -----------------
 let teamMembers = JSON.parse(localStorage.getItem('teamMembers')) || [];
 let bewerbungen = JSON.parse(localStorage.getItem('bewerbungen')) || [];
 let entbannungen = JSON.parse(localStorage.getItem('entbannungen')) || [];
 let currentUser = null;
 
 // Factory-Funktionen
-const createTeamMember = (name, role, pass, avatar='sunriserp.png', permissions={editApplications:true, editBans:true, assignRoles:true, deleteTeam:true}) => ({
-  name, role, pass, avatar, permissions
-});
-
-const createBewerbung = (art, discord, minecraft, email, position, text) => ({
-  art, discord, minecraft, email, position, text, notiz:'', status:'offen', bearbeiter:''
-});
-
-const createEntbannung = (minecraft, email, text) => ({
-  minecraft, email, text, notiz:'', status:'offen', bearbeiter:''
-});
+const createTeamMember = (name, role, pass, avatar='sunriserp.png', permissions={editApplications:true, editBans:true, assignRoles:true, deleteTeam:true}) => ({name, role, pass, avatar, permissions});
+const createBewerbung = (art, discord, minecraft, email, position, text) => ({art, discord, minecraft, email, position, text, notiz:'', status:'offen', bearbeiter:''});
+const createEntbannung = (minecraft, email, text) => ({minecraft, email, text, notiz:'', status:'offen', bearbeiter:''});
 
 // Standard-Leitungskonto
 if(!teamMembers.find(m => m.name === 'Leitung')){
@@ -244,7 +236,7 @@ if(!teamMembers.find(m => m.name === 'Leitung')){
   saveData();
 }
 
-/* ----------------- NAVIGATION ----------------- */
+// ----------------- NAVIGATION -----------------
 function showSection(id){
   document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -255,7 +247,7 @@ window.addEventListener('load', () => {
   if(window.location.hash) showSection(window.location.hash.substring(1));
 });
 
-/* ----------------- RENDER-FUNKTIONEN ----------------- */
+// ----------------- RENDER -----------------
 function renderTeam(){ 
   const tbody = document.querySelector('.team-table tbody');
   tbody.innerHTML = '';
@@ -320,14 +312,14 @@ function renderTeamAccounts(){
   });
 }
 
-/* ----------------- DATEN SPEICHERN ----------------- */
+// ----------------- DATEN SPEICHERN -----------------
 function saveData(){
   localStorage.setItem('teamMembers', JSON.stringify(teamMembers));
   localStorage.setItem('bewerbungen', JSON.stringify(bewerbungen));
   localStorage.setItem('entbannungen', JSON.stringify(entbannungen));
 }
 
-/* ----------------- STATUS-FUNKTIONEN ----------------- */
+// ----------------- STATUS -----------------
 const statusCycle = ['offen','gesehen','angenommen','abgelehnt'];
 
 function toggleBStatus(i){
@@ -354,7 +346,7 @@ function deleteTeam(i){
   }
 }
 
-/* ----------------- FORM HANDLER ----------------- */
+// ----------------- FORM HANDLER -----------------
 document.querySelector('.bewerbung-form').addEventListener('submit', e => {
   e.preventDefault();
   let art = document.querySelector('.bewerbungs-art').value;
@@ -364,7 +356,8 @@ document.querySelector('.bewerbung-form').addEventListener('submit', e => {
   let position = document.querySelector('.bewerbung-position')?.value || '';
   let text = document.querySelector('.bewerbung-text').value;
   bewerbungen.push(createBewerbung(art, discord, minecraft, email, position, text));
-  saveData(); alert('Bewerbung eingereicht!'); e.target.reset();
+  saveData(); alert('Bewerbung gesendet!');
+  e.target.reset();
 });
 
 document.querySelector('.entbannung-form').addEventListener('submit', e => {
@@ -373,46 +366,64 @@ document.querySelector('.entbannung-form').addEventListener('submit', e => {
   let email = document.querySelector('.entbannung-email').value;
   let text = document.querySelector('.entbannung-text').value;
   entbannungen.push(createEntbannung(minecraft, email, text));
-  saveData(); alert('Entbannungsantrag eingereicht!'); e.target.reset();
+  saveData(); alert('Entbannungsantrag gesendet!');
+  e.target.reset();
 });
 
-document.querySelector('.login-form').addEventListener('submit', e => {
-  e.preventDefault();
-  let user = document.querySelector('.login-user').value;
-  let pass = document.querySelector('.login-pass').value;
-  let acc = teamMembers.find(t => t.name === user && t.pass === pass);
-  if(acc){
-    currentUser = acc;
-    document.querySelector('.panel-content').style.display = 'block';
-    document.querySelector('.login-form').style.display = 'none';
-    renderPanel();
-  } else alert('Login fehlgeschlagen');
-});
-
+// Team erstellen
 document.querySelector('.team-create-form').addEventListener('submit', e => {
   e.preventDefault();
   let name = document.querySelector('.team-name').value;
   let role = document.querySelector('.team-role').value;
   let pass = document.querySelector('.team-pass').value;
-  let avatar = document.querySelector('.team-avatar').files[0] ? URL.createObjectURL(document.querySelector('.team-avatar').files[0]) : 'sunriserp.png';
-  teamMembers.push(createTeamMember(name, role, pass, avatar));
-  saveData(); renderTeamAccounts(); renderTeam(); e.target.reset();
+  let fileInput = document.querySelector('.team-avatar');
+  let avatar = 'sunriserp.png';
+  if(fileInput.files[0]){
+    let reader = new FileReader();
+    reader.onload = function(){
+      avatar = reader.result;
+      teamMembers.push(createTeamMember(name, role, pass, avatar));
+      saveData(); renderTeamAccounts(); renderTeam();
+    };
+    reader.readAsDataURL(fileInput.files[0]);
+  } else {
+    teamMembers.push(createTeamMember(name, role, pass, avatar));
+    saveData(); renderTeamAccounts(); renderTeam();
+  }
+  e.target.reset();
 });
 
-document.querySelector('.save-btn').addEventListener('click', () => {
-  bewerbungen.forEach((b,i) => b.notiz = document.querySelector('#notiz-'+i).value);
-  entbannungen.forEach((b,i) => b.notiz = document.querySelector('#e-notiz-'+i).value);
-  saveData(); alert('Änderungen gespeichert!');
+// Login
+document.querySelector('.login-form').addEventListener('submit', e=>{
+  e.preventDefault();
+  let user = document.querySelector('.login-user').value;
+  let pass = document.querySelector('.login-pass').value;
+  let member = teamMembers.find(m => m.name === user && m.pass === pass);
+  if(member){ currentUser = member; alert('Login erfolgreich'); document.querySelector('.panel-content').style.display='block'; renderPanel();}
+  else alert('Login fehlgeschlagen');
 });
 
-/* ----------------- DYNAMIC POSITION ----------------- */
-document.querySelector('.bewerbungs-art').addEventListener('change', e => {
-  document.querySelector('.team-positionen').style.display = e.target.value === 'Teambewerbung' ? 'block' : 'none';
+// Textareas speichern
+document.querySelector('.save-btn').addEventListener('click', ()=>{
+  document.querySelectorAll('[id^="notiz-"]').forEach(t=>{
+    let idx = parseInt(t.id.split('-')[1]);
+    bewerbungen[idx].notiz = t.value;
+  });
+  document.querySelectorAll('[id^="e-notiz-"]').forEach(t=>{
+    let idx = parseInt(t.id.split('-')[2]);
+    entbannungen[idx].notiz = t.value;
+  });
+  saveData();
+  alert('Änderungen gespeichert!');
 });
 
-/* ----------------- INIT ----------------- */
+// Team Positionen dynamisch anzeigen
+document.querySelector('.bewerbungs-art').addEventListener('change', e=>{
+  document.querySelector('.team-positionen').style.display = e.target.value==='Teambewerbung'?'block':'none';
+});
+
+// Initial render
 renderTeam();
-
 </script>
 </body>
 </html>
