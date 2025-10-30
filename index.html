@@ -4,21 +4,85 @@
 <meta charset="UTF-8">
 <title>SunriseRP – Adminpanel</title>
 <style>
-  body { font-family: 'Poppins', sans-serif; margin: 0; color: #fff; background: url('sunriserp.png') center/cover fixed no-repeat; }
-  header { background: rgba(0,0,0,0.6); text-align: center; padding: 20px; font-size: 24px; letter-spacing: 2px; text-shadow: 0 0 10px #ffbb55; }
-  nav { text-align: center; background: rgba(0,0,0,0.4); padding: 10px; }
-  nav button { background: rgba(255,255,255,0.15); border: none; color: #fff; padding: 10px 20px; margin: 5px; border-radius: 5px; cursor: pointer; transition: 0.3s; }
-  nav button:hover { background: rgba(255,200,120,0.4); }
-  section { display: none; padding: 20px; margin: 20px auto; max-width: 1000px; background: rgba(0,0,0,0.55); border-radius: 10px; }
+  /* ----------------- GLOBAL ----------------- */
+  body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    color: #fff;
+    background: url('sunriserp.png') center/cover fixed no-repeat;
+  }
+  header {
+    background: rgba(0,0,0,0.6);
+    text-align: center;
+    padding: 20px;
+    font-size: 24px;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px #ffbb55;
+  }
+  nav {
+    text-align: center;
+    background: rgba(0,0,0,0.4);
+    padding: 10px;
+  }
+  nav button {
+    background: rgba(255,255,255,0.15);
+    border: none;
+    color: #fff;
+    padding: 10px 20px;
+    margin: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  nav button:hover {
+    background: rgba(255,200,120,0.4);
+  }
+
+  section {
+    display: none;
+    padding: 20px;
+    margin: 20px auto;
+    max-width: 1000px;
+    background: rgba(0,0,0,0.55);
+    border-radius: 10px;
+  }
   section.active { display: block; }
-  h2, h3 { text-align: center; color: #ffbb55; text-shadow: 0 0 10px #ffbb55; }
-  table { width: 100%; border-collapse: collapse; color: #fff; }
-  th, td { border: 1px solid rgba(255,255,255,0.3); padding: 8px; text-align: center; }
-  input, select, textarea, button { padding: 8px; border: none; border-radius: 4px; margin: 5px 0; font-family: inherit; }
+
+  h2, h3 {
+    text-align: center;
+    color: #ffbb55;
+    text-shadow: 0 0 10px #ffbb55;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    color: #fff;
+  }
+  th, td {
+    border: 1px solid rgba(255,255,255,0.3);
+    padding: 8px;
+    text-align: center;
+  }
+
+  input, select, textarea, button {
+    padding: 8px;
+    border: none;
+    border-radius: 4px;
+    margin: 5px 0;
+    font-family: inherit;
+  }
+
   textarea { width: 95%; min-height: 60px; }
   .avatar { border-radius: 50%; width: 50px; }
-  .save-btn, .login-form button { background: #ffbb55; color: #000; cursor: pointer; }
+
+  .save-btn, .login-form button {
+    background: #ffbb55;
+    color: #000;
+    cursor: pointer;
+  }
   .save-btn:hover, .login-form button:hover { background: #ffd480; }
+
   form > div { margin-bottom: 10px; }
 </style>
 </head>
@@ -173,7 +237,6 @@ function createEntbannung(minecraft, email, text){
   return {minecraft, email, text, notiz:'', status:'offen', bearbeiter:''};
 }
 
-/* Standard-Admin */
 if(!teamMembers.find(m=>m.name==='Leitung')){
     teamMembers.unshift(createTeamMember('Leitung','Leitung','Leitung123'));
     saveData();
@@ -299,12 +362,12 @@ document.querySelector('.team-create-form').addEventListener('submit', e=>{
   saveData(); renderTeamAccounts(); renderTeam(); e.target.reset();
 });
 document.querySelector('.save-btn').addEventListener('click', ()=>{
-  bewerbungen.forEach((b,i)=>b.notiz=document.getElementById(`notiz-${i}`).value);
-  entbannungen.forEach((b,i)=>b.notiz=document.getElementById(`e-notiz-${i}`).value);
+  bewerbungen.forEach((b,i)=>b.notiz=document.querySelector('#notiz-'+i).value);
+  entbannungen.forEach((b,i)=>b.notiz=document.querySelector('#e-notiz-'+i).value);
   saveData(); alert('Änderungen gespeichert!');
 });
 
-/* ----------------- DYNAMISCHE FORM ANZEIGE ----------------- */
+/* ----------------- DYNAMIC POSITION ----------------- */
 document.querySelector('.bewerbungs-art').addEventListener('change', e=>{
   document.querySelector('.team-positionen').style.display = e.target.value==='Teambewerbung' ? 'block' : 'none';
 });
@@ -312,6 +375,5 @@ document.querySelector('.bewerbungs-art').addEventListener('change', e=>{
 /* ----------------- INIT ----------------- */
 renderTeam();
 </script>
-
 </body>
 </html>
