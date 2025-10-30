@@ -112,7 +112,6 @@
     <div><input type="text" class="login-user" placeholder="Benutzername" required></div>
     <div><input type="password" class="login-pass" placeholder="Passwort" required></div>
     <button type="submit">Login</button>
-    <span class="login-message"></span>
   </form>
 
   <div class="panel-content" style="display:none;">
@@ -176,9 +175,7 @@ function createEntbannung(minecraft, email, text){
 
 /* Standard-Admin */
 if(!teamMembers.find(m=>m.name==='Leitung')){
-    teamMembers.unshift(createTeamMember('Leitung','Leitung','Leitung123','sunriserp.png',{
-        editApplications:true, editBans:true, assignRoles:true, deleteTeam:true
-    }));
+    teamMembers.unshift(createTeamMember('Leitung','Leitung','Leitung123'));
     saveData();
 }
 
@@ -307,12 +304,12 @@ document.querySelector('.save-btn').addEventListener('click', ()=>{
   saveData(); alert('Änderungen gespeichert!');
 });
 
-/* Positionenanzeige */
+/* ----------------- DYNAMISCHE FORM ANZEIGE ----------------- */
 document.querySelector('.bewerbungs-art').addEventListener('change', e=>{
   document.querySelector('.team-positionen').style.display = e.target.value==='Teambewerbung' ? 'block' : 'none';
 });
 
-/* Initial */
+/* ----------------- INIT ----------------- */
 renderTeam();
 </script>
 
