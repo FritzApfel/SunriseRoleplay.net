@@ -265,7 +265,7 @@ Bei Fragen gerne im Support-Warteraum auf unserem Discord einfinden. Ein Support
 </section>
 
 <script>
-/* ----------------- DATEN ----------------- */
+// ----------------- DATEN -----------------
 let teamMembers = JSON.parse(localStorage.getItem('teamMembers')) || [];
 let bewerbungen = JSON.parse(localStorage.getItem('bewerbungen')) || [];
 let entbannungen = JSON.parse(localStorage.getItem('entbannungen')) || [];
@@ -279,7 +279,7 @@ const createEntbannung = (minecraft, discord, email, discordban, text) => ({
   datum: new Date().toLocaleString(), minecraft, discord, email, discordban, text, notiz:'', status:'offen', bearbeiter:''
 });
 
-// Leitungskonto hinzufügen, falls nicht vorhanden
+// Leitungskonto
 if(!teamMembers.find(m => m.name === 'Leitung')){
   teamMembers.unshift(createTeamMember('Leitung','Leitung','L3!t@d#SunR1$e2025'));
   saveData();
@@ -302,56 +302,40 @@ function renderTeam(){
       <td><img src="${m.avatar}" class="avatar"></td>
       <td>${m.name}</td>
       <td>${m.role}</td>
-      <td><button class="action-btn" onclick="openPermissions(${m})">Berechtigungen</button></td>
+      <td><button class="action-btn" onclick="editTeam(${m.name})">Berechtigungen</button></td>
     </tr>`;
   });
 }
 
 function renderPanel(){
-  // Bewerbungen rendern
   const tbodyB = document.querySelector('.panel-bewerbungen tbody');
   tbodyB.innerHTML = '';
   bewerbungen.forEach((b,i)=>{
     tbodyB.innerHTML += `<tr>
       <td>${b.datum}</td><td>${b.art}</td><td>${b.discord}</td><td>${b.minecraft}</td><td>${b.email}</td>
       <td>${b.position||''}</td><td>${b.text}</td><td>${b.notiz}</td><td>${b.status}</td><td>${b.bearbeiter}</td>
-      <td>
-        <button class="action-btn" onclick="editBewerbung(${i})">Bearbeiten</button>
-        <button class="action-btn" onclick="deleteBewerbung(${i})">Löschen</button>
-      </td>
+      <td><button class="action-btn" onclick="editBewerbung(${i})">Bearbeiten</button></td>
     </tr>`;
   });
 
-  // Entbannungen rendern
   const tbodyE = document.querySelector('.panel-entbannungen tbody');
   tbodyE.innerHTML = '';
   entbannungen.forEach((e,i)=>{
     tbodyE.innerHTML += `<tr>
-      <td>${e.datum}</td><td>${e.minecraft}</td><td>${e.discord}</td><td>${e.email}</td><td>${e.discordban ? 'Ja' : 'Nein'}</td>
+      <td>${e.datum}</td><td>${e.minecraft}</td><td>${e.discord}</td><td>${e.email}</td><td>${e.discordban?'Ja':'Nein'}</td>
       <td>${e.text}</td><td>${e.notiz}</td><td>${e.status}</td><td>${e.bearbeiter}</td>
-      <td>
-        <button class="action-btn" onclick="editEntbannung(${i})">Bearbeiten</button>
-        <button class="action-btn" onclick="deleteEntbannung(${i})">Löschen</button>
-      </td>
+      <td><button class="action-btn" onclick="editEntbannung(${i})">Bearbeiten</button></td>
     </tr>`;
   });
 
-  // Teamaccounts rendern
   const tbodyT = document.querySelector('.team-accounts-table tbody');
   tbodyT.innerHTML = '';
-  teamMembers.forEach((m,i) => {
+  teamMembers.forEach((m,i)=>{
     tbodyT.innerHTML += `<tr>
-      <td>${m.name}</td>
-      <td>${m.role}</td>
-      <td><img src="${m.avatar}" alt="Avatar" class="avatar"></td>
-      <td><button class="action-btn" onclick="deleteTeamMember(${i})">Löschen</button></td>
+      <td>${m.name}</td><td>${m.role}</td><td><img src="${m.avatar}" class="avatar"></td>
+      <td><button class="action-btn" onclick="editTeam(${i})">Berechtigungen</button></td>
     </tr>`;
   });
-}
-
-function openPermissions(member){
-  alert(`Berechtigungen für ${member.name}: \n- Bewerbungen bearbeiten: ${member.permissions.editApplications} \n- Entbannungen bearbeiten: ${member.permissions.editBans} \n- Team löschen: ${member.permissions.deleteTeam}`);
-  // Implementiere hier die Bearbeitung der Berechtigungen
 }
 
 function saveData(){
@@ -359,7 +343,25 @@ function saveData(){
   localStorage.setItem('bewerbungen', JSON.stringify(bewerbungen));
   localStorage.setItem('entbannungen', JSON.stringify(entbannungen));
   renderTeam();
+  renderPanel();
 }
+
+/* ----------------- BEARBEITEN ----------------- */
+function editTeam(i){
+  const m = teamMembers[i];
+  const perms = prompt(`Aktuelle Berechtigungen für ${m.name}:\nBewerbungen bearbeiten: ${m.permissions.editApplications ? 'Ja' : 'Nein'}\nEntbannungen bearbeiten: ${m.permissions.editBans ? 'Ja' : 'Nein'}\nTeam löschen: ${m.permissions.deleteTeam ? 'Ja' : 'Nein'}\nMöchten Sie Änderungen vornehmen? (Ja/Nein)`);
+  if(perms.toLowerCase() === 'ja'){
+    m.permissions.editApplications = confirm('Bewerbungen bearbeiten?');
+    m.permissions.editBans = confirm('Entbannungen bearbeiten?');
+    m.permissions.deleteTeam = confirm('Team löschen?');
+    alert('Berechtigungen wurden geändert.');
+    saveData();
+  }
+}
+
+/* ----------------- INIT ----------------- */
+saveData();
+renderTeam();
 </script>
 
 </body>
