@@ -156,28 +156,25 @@
 </section>
 
 <script>
-/* ----------------- DATEN UND KLASSEN IN SCRIPT ----------------- */
+/* ----------------- DATEN ----------------- */
 let teamMembers = JSON.parse(localStorage.getItem('teamMembers')) || [];
 let bewerbungen = JSON.parse(localStorage.getItem('bewerbungen')) || [];
 let entbannungen = JSON.parse(localStorage.getItem('entbannungen')) || [];
 let currentUser = null;
 
-// TeamMember erstellen
 function createTeamMember(name, role, pass, avatar='sunriserp.png', permissions={editApplications:true,editBans:true,assignRoles:true,deleteTeam:true}) {
   return {name, role, pass, avatar, permissions};
 }
 
-// Bewerbung erstellen
 function createBewerbung(art, discord, minecraft, email, position, text){
   return {art, discord, minecraft, email, position, text, notiz:'', status:'offen', bearbeiter:''};
 }
 
-// Entbannung erstellen
 function createEntbannung(minecraft, email, text){
   return {minecraft, email, text, notiz:'', status:'offen', bearbeiter:''};
 }
 
-// Standard-Admin
+/* Standard-Admin */
 if(!teamMembers.find(m=>m.name==='Leitung')){
     teamMembers.unshift(createTeamMember('Leitung','Leitung','Leitung123','sunriserp.png',{
         editApplications:true, editBans:true, assignRoles:true, deleteTeam:true
@@ -291,29 +288,31 @@ document.querySelector('.login-form').addEventListener('submit', e=>{
   e.preventDefault();
   let user=document.querySelector('.login-user').value;
   let pass=document.querySelector('.login-pass').value;
-  let member=teamMembers.find(m=>m.name===user && m.pass===pass);
-  const msg=document.querySelector('.login-message');
-  if(member){ currentUser=member; document.querySelector('.panel-content').style.display='block'; msg.textContent=''; renderPanel(); } 
-  else{ msg.textContent='Login fehlgeschlagen'; msg.style.color='red'; }
+  let acc = teamMembers.find(t=>t.name===user && t.pass===pass);
+  if(acc){ currentUser=acc; document.querySelector('.panel-content').style.display='block'; document.querySelector('.login-form').style.display='none'; renderPanel(); } 
+  else { alert('Login fehlgeschlagen'); }
 });
 document.querySelector('.team-create-form').addEventListener('submit', e=>{
   e.preventDefault();
-  if(!currentUser?.permissions.assignRoles){ alert('Keine Berechtigung'); return; }
   let name=document.querySelector('.team-name').value;
   let role=document.querySelector('.team-role').value;
   let pass=document.querySelector('.team-pass').value;
-  let avatar='sunriserp.png';
-  let file=document.querySelector('.team-avatar').files[0];
-  if(file){ let reader=new FileReader(); reader.onload=()=>{ teamMembers.push(createTeamMember(name,role,pass,reader.result)); saveData(); renderTeamAccounts(); renderTeam(); e.target.reset(); }; reader.readAsDataURL(file); }
-  else{ teamMembers.push(createTeamMember(name,role,pass)); saveData(); renderTeamAccounts(); renderTeam(); e.target.reset(); }
+  let avatar=document.querySelector('.team-avatar').files[0] ? URL.createObjectURL(document.querySelector('.team-avatar').files[0]) : 'sunriserp.png';
+  teamMembers.push(createTeamMember(name,role,pass,avatar));
+  saveData(); renderTeamAccounts(); renderTeam(); e.target.reset();
+});
+document.querySelector('.save-btn').addEventListener('click', ()=>{
+  bewerbungen.forEach((b,i)=>b.notiz=document.getElementById(`notiz-${i}`).value);
+  entbannungen.forEach((b,i)=>b.notiz=document.getElementById(`e-notiz-${i}`).value);
+  saveData(); alert('Änderungen gespeichert!');
 });
 
-/* ----------------- DYNAMISCHE FORM ANPASSUNG ----------------- */
+/* Positionenanzeige */
 document.querySelector('.bewerbungs-art').addEventListener('change', e=>{
-  document.querySelector('.team-positionen').style.display = e.target.value==='Teambewerbung'?'block':'none';
+  document.querySelector('.team-positionen').style.display = e.target.value==='Teambewerbung' ? 'block' : 'none';
 });
 
-/* ----------------- INITIAL RENDER ----------------- */
+/* Initial */
 renderTeam();
 </script>
 
