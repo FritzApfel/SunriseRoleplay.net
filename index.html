@@ -123,20 +123,32 @@
 </section>
 
 <script>
+// Daten
 let bewerbungen=JSON.parse(localStorage.getItem('bewerbungen'))||[];
 let entbannungen=JSON.parse(localStorage.getItem('entbannungen'))||[];
-let teamMembers=JSON.parse(localStorage.getItem('teamMembers'))||[{name:'Leitung',role:'Leitung',pass:'LeitungsebeneSunriseRp1457243867561923',avatar:'teamler1.png'}];
+let teamMembers=JSON.parse(localStorage.getItem('teamMembers'))||[
+  {
+    name:'Leitung',
+    role:'Leitung',
+    pass:'LeitungsebeneSunriseRp1457243867561923',
+    avatar:'sunriserp.png',
+    permissions: {editApplications:true,editBans:true,assignRoles:true,deleteTeam:true}
+  }
+];
 let currentUser=null;
 
+// Navigation
 function showSection(id){
  document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));
  document.getElementById(id).classList.add('active');
 }
 
+// Bewerbungsart wechseln
 document.getElementById('bewerbungsArt').addEventListener('change',()=>{
  document.getElementById('teamPositionen').style.display = document.getElementById('bewerbungsArt').value==='Teambewerbung'?'block':'none';
 });
 
+// Team rendern
 function renderTeam(){
  const tbody=document.querySelector('#teamTable tbody');
  tbody.innerHTML='';
@@ -144,6 +156,7 @@ function renderTeam(){
 }
 renderTeam();
 
+// Bewerbungsformular
 document.getElementById('bewerbungForm').addEventListener('submit',e=>{
  e.preventDefault();
  const art=bewerbungsArt.value,pos=art==='Teambewerbung'?bewerbungPosition.value:'-';
@@ -151,77 +164,98 @@ document.getElementById('bewerbungForm').addEventListener('submit',e=>{
  saveData(); e.target.reset(); alert("Bewerbung eingereicht!");
 });
 
+// Entbannungsformular
 document.getElementById('entbannungForm').addEventListener('submit',e=>{
  e.preventDefault();
  entbannungen.push({minecraft:entbannungMinecraft.value,email:entbannungEmail.value,text:entbannungText.value,notiz:'',status:'offen',bearbeiter:''});
  saveData(); e.target.reset(); alert("Entbannungsantrag eingereicht!");
 });
 
+// Login
 document.getElementById('loginForm').addEventListener('submit',e=>{
  e.preventDefault();
  const user=loginUser.value,pass=loginPass.value;
  const t=teamMembers.find(m=>m.name===user&&m.pass===pass);
- if(t){currentUser=t.name;document.getElementById('panelContent').style.display='block';document.getElementById('loginMessage').textContent='Erfolgreich eingeloggt als '+t.name;renderPanel();}
- else document.getElementById('loginMessage').textContent='Falsche Daten';
+ if(t){
+   currentUser=t;
+   document.getElementById('panelContent').style.display='block';
+   document.getElementById('loginMessage').textContent='Erfolgreich eingeloggt als '+t.name;
+   renderPanel();
+ } else document.getElementById('loginMessage').textContent='Falsche Daten';
 });
 
+// Panel rendern
 function renderPanel(){
  renderPanelBewerbungen(); renderPanelEntbannungen(); renderTeamAccounts();
 }
 
+// Bewerbungen rendern
 function renderPanelBewerbungen(){
  const tb=document.querySelector('#panelBewerbungen tbody'); tb.innerHTML='';
  bewerbungen.forEach((b,i)=>{
   tb.innerHTML+=`<tr>
   <td>${b.art}</td><td>${b.discord}</td><td>${b.minecraft}</td><td>${b.email}</td><td>${b.position}</td><td>${b.text}</td>
   <td><textarea id="bNotiz${i}">${b.notiz}</textarea></td>
-  <td><button onclick="toggleBStatus(${i})">${b.status}</button></td>
+  <td><button onclick="toggleBStatus(${i})" ${!currentUser.permissions.editApplications?'disabled':''}>${b.status}</button></td>
   <td>${b.bearbeiter||'-'}</td>
   </tr>`;
  });
 }
 
 function toggleBStatus(i){
+ if(!currentUser.permissions.editApplications){alert("Keine Berechtigung!"); return;}
  bewerbungen[i].status = bewerbungen[i].status==='offen'?'gesehen':'offen';
- bewerbungen[i].bearbeiter = currentUser;
+ bewerbungen[i].bearbeiter = currentUser.name;
  saveData(); renderPanelBewerbungen();
 }
 
+// Entbannungen rendern
 function renderPanelEntbannungen(){
  const tb=document.querySelector('#panelEntbannungen tbody'); tb.innerHTML='';
  entbannungen.forEach((e,i)=>{
   tb.innerHTML+=`<tr>
   <td>${e.minecraft}</td><td>${e.email}</td><td>${e.text}</td>
   <td><textarea id="eNotiz${i}">${e.notiz}</textarea></td>
-  <td><button onclick="toggleEStatus(${i})">${e.status}</button></td>
+  <td><button onclick="toggleEStatus(${i})" ${!currentUser.permissions.editBans?'disabled':''}>${e.status}</button></td>
   <td>${e.bearbeiter||'-'}</td>
   </tr>`;
  });
 }
 
 function toggleEStatus(i){
+ if(!currentUser.permissions.editBans){alert("Keine Berechtigung!"); return;}
  entbannungen[i].status = entbannungen[i].status==='offen'?'gesehen':'offen';
- entbannungen[i].bearbeiter = currentUser;
+ entbannungen[i].bearbeiter = currentUser.name;
  saveData(); renderPanelEntbannungen();
 }
 
+// Team erstellen
 document.getElementById('teamCreateForm').addEventListener('submit',e=>{
  e.preventDefault();
+ if(!currentUser.permissions.assignRoles){alert("Keine Berechtigung!"); return;}
  const name=teamName.value,role=teamRole.value,pass=teamPass.value;
  const file=teamAvatar.files[0]; let avatar='default.png';
  if(file) avatar=URL.createObjectURL(file);
- teamMembers.push({name,role,pass,avatar}); saveData(); renderTeam(); renderTeamAccounts(); e.target.reset();
+ teamMembers.push({name,role,pass,avatar,permissions:{editApplications:false,editBans:false,assignRoles:false,deleteTeam:false}});
+ saveData(); renderTeam(); renderTeamAccounts(); e.target.reset();
 });
 
+// Team Accounts rendern
 function renderTeamAccounts(){
  const tb=document.querySelector('#teamAccountsTable tbody'); tb.innerHTML='';
  teamMembers.forEach((m,i)=>{
-  tb.innerHTML+=`<tr><td>${m.name}</td><td>${m.role}</td><td><img class="avatar" src="${m.avatar}"></td><td>${m.name!=='Leitung'?`<button onclick="deleteTeam(${i})">Löschen</button>`:''}</td></tr>`;
+  const canDelete = currentUser.permissions.deleteTeam && m.name!=='Leitung';
+  tb.innerHTML+=`<tr><td>${m.name}</td><td>${m.role}</td><td><img class="avatar" src="${m.avatar}"></td><td>${canDelete?`<button onclick="deleteTeam(${i})">Löschen</button>`:''}</td></tr>`;
  });
 }
 
-function deleteTeam(i){if(confirm("Teammitglied löschen?")){teamMembers.splice(i,1);saveData();renderTeam();renderTeamAccounts();}}
+// Team löschen
+function deleteTeam(i){
+ if(!currentUser.permissions.deleteTeam){alert("Keine Berechtigung!"); return;}
+ if(confirm("Teammitglied löschen?")){teamMembers.splice(i,1);saveData();renderTeam();renderTeamAccounts();}
+}
 
+// Daten speichern
 function saveData(){
  bewerbungen.forEach((b,i)=>{if(document.getElementById(`bNotiz${i}`))b.notiz=document.getElementById(`bNotiz${i}`).value;});
  entbannungen.forEach((e,i)=>{if(document.getElementById(`eNotiz${i}`))e.notiz=document.getElementById(`eNotiz${i}`).value;});
