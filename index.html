@@ -3,9 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SunriseRP Panel</title>
+<title>SunriseRP</title>
 <style>
-  /* Grundlayout */
   body {
     margin: 0;
     font-family: 'Arial', sans-serif;
@@ -34,9 +33,7 @@
     color: #ffcb77;
     font-weight: bold;
   }
-  nav a:hover {
-    color: #fffcf2;
-  }
+  nav a:hover { color: #fffcf2; }
   main {
     max-width: 1100px;
     margin: 20px auto;
@@ -45,22 +42,10 @@
     border-radius: 15px;
     backdrop-filter: blur(5px);
   }
-  h2 {
-    color: #ffcb77;
-    border-bottom: 2px solid #ffcb77;
-    padding-bottom: 5px;
-  }
-  section {
-    margin-bottom: 50px;
-  }
+  h2 { color: #ffcb77; border-bottom: 2px solid #ffcb77; padding-bottom: 5px; }
+  section { margin-bottom: 50px; }
 
-  /* Team Grid */
-  .team-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    justify-content: center;
-  }
+  .team-grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
   .team-member {
     background: rgba(255,255,255,0.1);
     border-radius: 15px;
@@ -68,78 +53,23 @@
     width: 180px;
     text-align: center;
     box-shadow: 0 0 15px rgba(255,255,255,0.2);
-    transition: transform 0.2s, box-shadow 0.2s;
-  }
-  .team-member:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 0 25px rgba(255,255,255,0.4);
   }
   .team-member img {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    object-fit: cover;
+    width: 100px; height: 100px; border-radius: 50%; object-fit: cover;
     margin-bottom: 10px;
   }
 
-  /* Forms */
-  form {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    background: rgba(255,255,255,0.1);
-    padding: 15px;
-    border-radius: 10px;
-  }
-  input, select, textarea, button {
-    padding: 10px;
-    border-radius: 5px;
-    border: none;
-    font-size: 15px;
-  }
-  input, select, textarea {
-    background: rgba(255,255,255,0.2);
-    color: #fff;
-  }
+  form { display: flex; flex-direction: column; gap: 10px; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; }
+  input, select, textarea, button { padding: 10px; border-radius: 5px; border: none; font-size: 15px; }
+  input, select, textarea { background: rgba(255,255,255,0.2); color: #fff; }
   textarea { resize: none; }
-  button {
-    background: #ffcb77;
-    color: #1a1a2e;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background 0.3s;
-  }
-  button:hover {
-    background: #ffd97d;
-  }
+  button { background: #ffcb77; color: #1a1a2e; font-weight: bold; cursor: pointer; transition: background 0.3s; }
+  button:hover { background: #ffd97d; }
 
-  .panel {
-    background: rgba(255,255,255,0.05);
-    padding: 15px;
-    border-radius: 10px;
-    max-height: 400px;
-    overflow-y: auto;
-    margin-bottom: 20px;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    color: #fff;
-  }
-  th, td {
-    border: 1px solid rgba(255,255,255,0.3);
-    padding: 8px;
-    text-align: left;
-  }
+  .panel { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; max-height: 400px; overflow-y: auto; margin-bottom: 20px; }
+  table { width: 100%; border-collapse: collapse; color: #fff; }
+  th, td { border: 1px solid rgba(255,255,255,0.3); padding: 8px; text-align: left; }
   th { background: rgba(255,255,255,0.2); }
-
-  footer {
-    text-align: center;
-    padding: 20px;
-    background: rgba(0,0,0,0.5);
-    margin-top: 40px;
-  }
-
   .hidden { display: none; }
 </style>
 </head>
@@ -147,71 +77,108 @@
 
 <header>
   <img src="sunriserp.png" alt="SunriseRP Logo">
-  <h1>SunriseRP Admin Panel</h1>
+  <h1>SunriseRP</h1>
 </header>
 
 <nav>
-  <a href="#login">Login</a>
-  <a href="#panel" id="panelLink" class="hidden">Panel</a>
+  <a href="#regeln">Regelwerk</a>
+  <a href="#team">Team</a>
+  <a href="#bewerbung">Bewerbung</a>
+  <a href="#entbannung">Entbannung</a>
+  <a href="#login">Team Login</a>
 </nav>
 
 <main>
-  <!-- Login -->
-  <section id="login">
-    <h2>Login (Leitung)</h2>
-    <form id="loginForm">
-      <input type="text" id="username" placeholder="Benutzername" required>
-      <input type="password" id="password" placeholder="Passwort" required>
-      <button type="submit">Anmelden</button>
-    </form>
-    <p id="loginMessage" style="color:#ffcb77; margin-top:10px;"></p>
+  <!-- Regelwerk -->
+  <section id="regeln">
+    <h2>Regelwerk</h2>
+    <p>Hier kommen eure Serverregeln rein.</p>
   </section>
 
-  <!-- Panel -->
-  <section id="panel" class="hidden">
-    <h2>Admin Panel</h2>
+  <!-- Team -->
+  <section id="team">
+    <h2>Team</h2>
+    <div class="team-grid" id="teamList"></div>
+  </section>
 
-    <!-- Team-Mitglieder Übersicht -->
+  <!-- Bewerbung -->
+  <section id="bewerbung">
+    <h2>Bewerbung</h2>
+    <form id="bewerbungForm">
+      <input type="text" id="bewerbungDiscord" placeholder="Discord Name" required>
+      <input type="text" id="bewerbungMinecraft" placeholder="Minecraft Name" required>
+      <input type="email" id="bewerbungEmail" placeholder="E-Mail" required>
+      <select id="bewerbungPosition" required>
+        <option value="">Position wählen</option>
+        <option value="Builder">Builder</option>
+        <option value="Designer">Designer</option>
+        <option value="Content Creator">Content Creator</option>
+        <option value="Supporter">Supporter</option>
+      </select>
+      <textarea id="bewerbungText" placeholder="Deine Bewerbung..." rows="5" required></textarea>
+      <button type="submit">Absenden</button>
+    </form>
+  </section>
+
+  <!-- Entbannung -->
+  <section id="entbannung">
+    <h2>Entbannungsantrag</h2>
+    <form id="entbannungForm">
+      <input type="text" id="entbannungMinecraft" placeholder="Minecraft Name" required>
+      <input type="email" id="entbannungEmail" placeholder="E-Mail" required>
+      <textarea id="entbannungText" placeholder="Grund..." rows="5" required></textarea>
+      <button type="submit">Absenden</button>
+    </form>
+  </section>
+
+  <!-- Login -->
+  <section id="login">
+    <h2>Team Login</h2>
+    <form id="loginForm">
+      <input type="text" id="loginUser" placeholder="Benutzername" required>
+      <input type="password" id="loginPass" placeholder="Passwort" required>
+      <button type="submit">Login</button>
+    </form>
+    <p id="loginMessage" style="color:#ffcb77;"></p>
+  </section>
+
+  <!-- Team Panel -->
+  <section id="panel" class="hidden">
+    <h2>Team Panel</h2>
+
     <div class="panel">
-      <h3>Aktuelles Team</h3>
-      <div class="team-grid" id="teamList"></div>
+      <h3>Team Accounts verwalten</h3>
+      <form id="teamCreateForm">
+        <input type="text" id="teamName" placeholder="Name" required>
+        <input type="text" id="teamRole" placeholder="Rolle" required>
+        <input type="password" id="teamPass" placeholder="Passwort" required>
+        <input type="file" id="teamAvatar">
+        <button type="submit">Account erstellen</button>
+      </form>
+      <table id="teamAccountsTable">
+        <thead><tr><th>Name</th><th>Rolle</th><th>Avatar</th><th>Aktion</th></tr></thead>
+        <tbody></tbody>
+      </table>
     </div>
 
-    <!-- Bewerbungen -->
     <div class="panel">
       <h3>Bewerbungen</h3>
       <table id="bewerbungenTable">
-        <thead>
-          <tr><th>Discord</th><th>Minecraft</th><th>Email</th><th>Position</th><th>Status</th><th>Aktion</th></tr>
-        </thead>
+        <thead><tr><th>Discord</th><th>Minecraft</th><th>Email</th><th>Position</th><th>Inhalt</th><th>Aktion</th></tr></thead>
         <tbody></tbody>
       </table>
-      <button onclick="addDummyBewerbung()">+ Neue Dummy-Bewerbung</button>
     </div>
 
-    <!-- Entbannungsanträge -->
     <div class="panel">
-      <h3>Entbannungsanträge</h3>
+      <h3>Entbannungen</h3>
       <table id="entbannungenTable">
-        <thead>
-          <tr><th>Minecraft</th><th>Email</th><th>Grund</th><th>Status</th><th>Aktion</th></tr>
-        </thead>
+        <thead><tr><th>Minecraft</th><th>Email</th><th>Inhalt</th><th>Aktion</th></tr></thead>
         <tbody></tbody>
       </table>
-      <button onclick="addDummyEntbannung()">+ Neuer Dummy-Antrag</button>
-    </div>
-
-    <!-- Team Accounts erstellen -->
-    <div class="panel">
-      <h3>Team Accounts erstellen</h3>
-      <form id="teamCreateForm">
-        <input type="text" id="teamName" placeholder="Name des Teamlers" required>
-        <input type="text" id="teamRole" placeholder="Rolle" required>
-        <button type="submit">Teammitglied erstellen</button>
-      </form>
     </div>
 
   </section>
+
 </main>
 
 <footer>
@@ -219,115 +186,130 @@
 </footer>
 
 <script>
-  // Daten simulieren
+  // Daten
   let teamMembers = [
-    {name: 'Fabian', role: 'Leitung', avatar: 'teamler1.png'},
-    {name: 'Moritz', role: 'Chef Supporter', avatar: 'teamler2.png'},
-    {name: 'Fin', role: 'Chef Content Creator', avatar: 'teamler3.png'},
-    {name: 'Perry', role: 'Chef Designer', avatar: 'teamler4.png'},
-    {name: 'Lemon', role: 'Chef Builder', avatar: 'teamler5.png'}
+    {name:'Fabian', role:'Leitung', avatar:'teamler1.png', pass:'pass123'},
+    {name:'Moritz', role:'Chef Supporter', avatar:'teamler2.png', pass:'pass123'},
+    {name:'Fin', role:'Chef Content Creator', avatar:'teamler3.png', pass:'pass123'},
+    {name:'Perry', role:'Chef Designer', avatar:'teamler4.png', pass:'pass123'},
+    {name:'Lemon', role:'Chef Builder', avatar:'teamler5.png', pass:'pass123'}
   ];
   let bewerbungen = [];
   let entbannungen = [];
 
-  // Login
-  const loginForm = document.getElementById('loginForm');
-  loginForm.addEventListener('submit', function(e){
-    e.preventDefault();
-    const user = document.getElementById('username').value;
-    const pass = document.getElementById('password').value;
-    if(user === 'Leitung' && pass === '!SRP-Leitung_2025-Complex$Key#92'){
-      document.getElementById('login').classList.add('hidden');
-      document.getElementById('panel').classList.remove('hidden');
-      document.getElementById('panelLink').classList.remove('hidden');
-      renderTeam();
-    } else {
-      document.getElementById('loginMessage').textContent = 'Benutzername oder Passwort falsch!';
-    }
-  });
-
-  // Teamliste rendern
+  // Team-Liste rendern
   function renderTeam(){
     const container = document.getElementById('teamList');
     container.innerHTML = '';
-    teamMembers.forEach(m => {
+    teamMembers.forEach(m=>{
       const div = document.createElement('div');
-      div.className = 'team-member';
-      div.innerHTML = `<img src="${m.avatar}" alt="${m.name}"><h3>${m.name}</h3><p>${m.role}</p>`;
+      div.className='team-member';
+      div.innerHTML=`<img src="${m.avatar}" alt="${m.name}"><h3>${m.name}</h3><p>${m.role}</p>`;
       container.appendChild(div);
     });
   }
+  renderTeam();
 
-  // Bewerbungen rendern
-  function renderBewerbungen(){
-    const tbody = document.querySelector('#bewerbungenTable tbody');
-    tbody.innerHTML = '';
-    bewerbungen.forEach((b,i) => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${b.discord}</td>
-        <td>${b.minecraft}</td>
-        <td>${b.email}</td>
-        <td>${b.position}</td>
-        <td>${b.status}</td>
-        <td>
-          <button onclick="bewerbungAktion(${i}, 'angenommen')">Annehmen</button>
-          <button onclick="bewerbungAktion(${i}, 'abgelehnt')">Ablehnen</button>
-        </td>`;
-      tbody.appendChild(tr);
-    });
-  }
-
-  function bewerbungAktion(index, status){
-    bewerbungen[index].status = status;
-    renderBewerbungen();
-  }
-
-  // Entbannungen rendern
-  function renderEntbannungen(){
-    const tbody = document.querySelector('#entbannungenTable tbody');
-    tbody.innerHTML = '';
-    entbannungen.forEach((e,i) => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${e.minecraft}</td>
-        <td>${e.email}</td>
-        <td>${e.grund}</td>
-        <td>${e.status}</td>
-        <td>
-          <button onclick="entbannungAktion(${i}, 'angenommen')">Annehmen</button>
-          <button onclick="entbannungAktion(${i}, 'abgelehnt')">Ablehnen</button>
-        </td>`;
-      tbody.appendChild(tr);
-    });
-  }
-
-  function entbannungAktion(index, status){
-    entbannungen[index].status = status;
-    renderEntbannungen();
-  }
-
-  // Dummy-Daten
-  function addDummyBewerbung(){
-    bewerbungen.push({discord:'User#1234', minecraft:'MineUser', email:'test@example.com', position:'Builder', status:'Offen'});
-    renderBewerbungen();
-  }
-  function addDummyEntbannung(){
-    entbannungen.push({minecraft:'MineUser', email:'test@example.com', grund:'Missverständnis', status:'Offen'});
-    renderEntbannungen();
-  }
-
-  // Teammitglied erstellen
-  document.getElementById('teamCreateForm').addEventListener('submit', function(e){
+  // Bewerbungen absenden
+  document.getElementById('bewerbungForm').addEventListener('submit', e=>{
     e.preventDefault();
-    const name = document.getElementById('teamName').value;
-    const role = document.getElementById('teamRole').value;
-    const avatar = 'teamler1.png'; // Default Avatar
-    teamMembers.push({name, role, avatar});
-    renderTeam();
-    this.reset();
+    bewerbungen.push({
+      discord: document.getElementById('bewerbungDiscord').value,
+      minecraft: document.getElementById('bewerbungMinecraft').value,
+      email: document.getElementById('bewerbungEmail').value,
+      position: document.getElementById('bewerbungPosition').value,
+      text: document.getElementById('bewerbungText').value
+    });
+    alert('Bewerbung eingereicht!');
+    e.target.reset();
+    renderBewerbungen();
   });
 
+  function renderBewerbungen(){
+    const tbody = document.querySelector('#bewerbungenTable tbody');
+    tbody.innerHTML='';
+    bewerbungen.forEach((b,i)=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td>${b.discord}</td><td>${b.minecraft}</td><td>${b.email}</td><td>${b.position}</td><td>${b.text}</td>
+      <td><button onclick="bewerbungAktion(${i},'angenommen')">Annehmen</button> <button onclick="bewerbungAktion(${i},'abgelehnt')">Ablehnen</button></td>`;
+      tbody.appendChild(tr);
+    });
+  }
+  function bewerbungAktion(i,status){bewerbungen[i].status=status; renderBewerbungen();}
+
+  // Entbannung absenden
+  document.getElementById('entbannungForm').addEventListener('submit', e=>{
+    e.preventDefault();
+    entbannungen.push({
+      minecraft: document.getElementById('entbannungMinecraft').value,
+      email: document.getElementById('entbannungEmail').value,
+      text: document.getElementById('entbannungText').value
+    });
+    alert('Entbannungsantrag eingereicht!');
+    e.target.reset();
+    renderEntbannungen();
+  });
+  function renderEntbannungen(){
+    const tbody=document.querySelector('#entbannungenTable tbody');
+    tbody.innerHTML='';
+    entbannungen.forEach((e,i)=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td>${e.minecraft}</td><td>${e.email}</td><td>${e.text}</td>
+      <td><button onclick="entbannungAktion(${i},'angenommen')">Annehmen</button> <button onclick="entbannungAktion(${i},'abgelehnt')">Ablehnen</button></td>`;
+      tbody.appendChild(tr);
+    });
+  }
+  function entbannungAktion(i,status){entbannungen[i].status=status; renderEntbannungen();}
+
+  // Login
+  document.getElementById('loginForm').addEventListener('submit', e=>{
+    e.preventDefault();
+    const user = document.getElementById('loginUser').value;
+    const pass = document.getElementById('loginPass').value;
+    const match = teamMembers.find(m=>m.name===user && m.pass===pass);
+    if(match){
+      document.getElementById('panel').classList.remove('hidden');
+      document.getElementById('loginMessage').textContent='Login erfolgreich!';
+    } else {
+      document.getElementById('loginMessage').textContent='Benutzername oder Passwort falsch!';
+    }
+  });
+
+  // Team Account erstellen
+  document.getElementById('teamCreateForm').addEventListener('submit', e=>{
+    e.preventDefault();
+    const name=document.getElementById('teamName').value;
+    const role=document.getElementById('teamRole').value;
+    const pass=document.getElementById('teamPass').value;
+    const file=document.getElementById('teamAvatar').files[0];
+    let avatar='default.png';
+    if(file){avatar=URL.createObjectURL(file);}
+    teamMembers.push({name,role,pass,avatar});
+    renderTeam();
+    renderTeamAccounts();
+    e.target.reset();
+  });
+
+  function renderTeamAccounts(){
+    const tbody=document.querySelector('#teamAccountsTable tbody');
+    tbody.innerHTML='';
+    teamMembers.forEach((m,i)=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td>${m.name}</td><td>${m.role}</td><td><img src="${m.avatar}" width="50"></td>
+      <td><button onclick="deleteTeam(${i})">Löschen</button></td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function deleteTeam(i){
+    if(confirm(`Teammitglied ${teamMembers[i].name} löschen?`)){
+      teamMembers.splice(i,1);
+      renderTeam();
+      renderTeamAccounts();
+    }
+  }
+
+  renderTeamAccounts();
 </script>
 
 </body>
