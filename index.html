@@ -307,26 +307,6 @@ function renderTeam(){
 }
 
 function renderPanel(){
-  const tbodyB = document.querySelector('.panel-bewerbungen tbody');
-  tbodyB.innerHTML = '';
-  bewerbungen.forEach((b,i)=>{
-    tbodyB.innerHTML += `<tr>
-      <td>${b.datum}</td><td>${b.art}</td><td>${b.discord}</td><td>${b.minecraft}</td><td>${b.email}</td>
-      <td>${b.position||''}</td><td>${b.text}</td><td>${b.notiz}</td><td>${b.status}</td><td>${b.bearbeiter}</td>
-      <td><button class="action-btn" onclick="editBewerbung(${i})">Bearbeiten</button></td>
-    </tr>`;
-  });
-
-  const tbodyE = document.querySelector('.panel-entbannungen tbody');
-  tbodyE.innerHTML = '';
-  entbannungen.forEach((e,i)=>{
-    tbodyE.innerHTML += `<tr>
-      <td>${e.datum}</td><td>${e.minecraft}</td><td>${e.discord}</td><td>${e.email}</td><td>${e.discordban?'Ja':'Nein'}</td>
-      <td>${e.text}</td><td>${e.notiz}</td><td>${e.status}</td><td>${e.bearbeiter}</td>
-      <td><button class="action-btn" onclick="editEntbannung(${i})">Bearbeiten</button></td>
-    </tr>`;
-  });
-
   const tbodyT = document.querySelector('.team-accounts-table tbody');
   tbodyT.innerHTML = '';
   teamMembers.forEach((m,i)=>{
@@ -335,6 +315,13 @@ function renderPanel(){
       <td><button class="action-btn" onclick="editPermissions(${i})">Berechtigungen</button></td>
     </tr>`;
   });
+}
+
+function saveData(){
+  localStorage.setItem('teamMembers',JSON.stringify(teamMembers));
+  localStorage.setItem('bewerbungen',JSON.stringify(bewerbungen));
+  localStorage.setItem('entbannungen',JSON.stringify(entbannungen));
+  renderTeam();
 }
 
 /* ----------------- BEARBEITEN ----------------- */
