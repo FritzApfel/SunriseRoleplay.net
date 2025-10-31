@@ -266,41 +266,74 @@ function renderTeam(){
     });
 }
 
-function renderPanel(){
+// Bewerbungen und Entbannungen nach Berechtigungen filtern
+function renderPanel() {
     const tbodyT = document.querySelector('.team-accounts-table tbody');
     tbodyT.innerHTML = '';
-    teamMembers.forEach((m,i)=>{
+    teamMembers.forEach((m, i) => {
         tbodyT.innerHTML += `<tr>
             <td>${m.name}</td>
             <td>${m.role}</td>
             <td><img src="${m.avatar}" class="avatar"></td>
             <td><button class="action-btn" onclick="editPermissions(${i})">Verwalten</button></td>
-            <td>${canDelete(m)? '<button class="action-btn" onclick="deleteMember('+i+')">Löschen</button>':''}</td>
+            <td>${canDelete(m) ? '<button class="action-btn" onclick="deleteMember(' + i + ')">Löschen</button>' : ''}</td>
         </tr>`;
+    });
+
+    // Bewerbungen filtern
+    const tbodyB = document.querySelector('.panel-bewerbungen tbody');
+    tbodyB.innerHTML = '';
+    bewerbungen.forEach((b) => {
+        if (currentUser.name === 'Leitung' ||
+            (b.art === 'Teambewerbung' && currentUser.permissions.teamApps) ||
+            (b.art === 'Fraktionsbewerbung' && currentUser.permissions.fraktionApps)) {
+            tbodyB.innerHTML += `<tr>
+                <td>${b.datum}</td>
+                <td>${b.art}</td>
+                <td>${b.discord}</td>
+                <td>${b.minecraft}</td>
+                <td>${b.email}</td>
+                <td>${b.position || '-'}</td>
+                <td>${b.text}</td>
+                <td>${b.notiz || '-'}</td>
+                <td>${b.status || 'offen'}</td>
+                <td>${b.bearbeiter || '-'}</td>
+                <td></td>
+            </tr>`;
+        }
+    });
+
+    // Entbannungen filtern
+    const tbodyE = document.querySelector('.panel-entbannungen tbody');
+    tbodyE.innerHTML = '';
+    entbannungen.forEach((e) => {
+        if (currentUser.name === 'Leitung' || currentUser.permissions.bans) {
+            tbodyE.innerHTML += `<tr>
+                <td>${e.datum}</td>
+                <td>${e.minecraft}</td>
+                <td>${e.discord}</td>
+                <td>${e.email}</td>
+                <td>${e.discordban ? 'Ja' : 'Nein'}</td>
+                <td>${e.text}</td>
+                <td>${e.notiz || '-'}</td>
+                <td>${e.status || 'offen'}</td>
+                <td>${e.bearbeiter || '-'}</td>
+                <td></td>
+            </tr>`;
+        }
     });
 }
 
-function canDelete(member){
-    if(member.name === 'Leitung') return false;
-    if(currentUser?.permissions?.deleteTeam || currentUser?.name === 'Leitung') return true;
-    return false;
-}
-
-function saveData(){
-    localStorage.setItem('teamMembers',JSON.stringify(teamMembers));
-    localStorage.setItem('bewerbungen',JSON.stringify(bewerbungen));
-    localStorage.setItem('entbannungen',JSON.stringify(entbannungen));
-    renderTeam();
-    renderPanel();
-}
-
-// ----------------- BEARBEITEN -----------------
-function editPermissions(i){
+// Anpassung: Teammitglieder dürfen nur Teamaccounts verwalten, wenn Berechtigung
+function editPermissions(i) {
     const m = teamMembers[i];
-    if(m.name==='Leitung') { alert('Leitung-Account kann nicht bearbeitet werden.'); return; }
-    if(currentUser.name!=='Leitung' && !currentUser.permissions.teamAccounts){
-        alert('Keine Berechtigung!');
-        return;
+    if (m.name === 'Leitung') { 
+        alert('Leitung-Account kann nicht bearbeitet werden.'); 
+        return; 
+    }
+    if (currentUser.name !== 'Leitung' && !currentUser.permissions.teamAccounts) { 
+        alert('Keine Berechtigung!'); 
+        return; 
     }
     m.permissions.teamAccounts = confirm('Team Accounts verwalten?');
     m.permissions.teamApps = confirm('Teambewerbungen einsehen?');
