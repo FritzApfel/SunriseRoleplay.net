@@ -280,7 +280,6 @@ function renderPanel() {
         </tr>`;
     });
 
-    // Bewerbungen filtern
     const tbodyB = document.querySelector('.panel-bewerbungen tbody');
     tbodyB.innerHTML = '';
     bewerbungen.forEach((b) => {
@@ -303,7 +302,6 @@ function renderPanel() {
         }
     });
 
-    // Entbannungen filtern
     const tbodyE = document.querySelector('.panel-entbannungen tbody');
     tbodyE.innerHTML = '';
     entbannungen.forEach((e) => {
@@ -324,14 +322,17 @@ function renderPanel() {
     });
 }
 
-// Anpassung: Teammitglieder dürfen nur Teamaccounts verwalten, wenn Berechtigung
+function canDelete(member) {
+    return currentUser.name === 'Leitung' || (currentUser.permissions.deleteTeam && member.name !== 'Leitung');
+}
+
 function editPermissions(i) {
     const m = teamMembers[i];
     if (m.name === 'Leitung') { 
         alert('Leitung-Account kann nicht bearbeitet werden.'); 
         return; 
     }
-    if (currentUser.name !== 'Leitung' && !currentUser.permissions.teamAccounts) { 
+    if (!currentUser.permissions.teamAccounts) { 
         alert('Keine Berechtigung!'); 
         return; 
     }
@@ -339,14 +340,18 @@ function editPermissions(i) {
     m.permissions.teamApps = confirm('Teambewerbungen einsehen?');
     m.permissions.fraktionApps = confirm('Fraktionsbewerbungen einsehen?');
     m.permissions.bans = confirm('Entbannungsanträge einsehen?');
+    m.permissions.deleteTeam = confirm('Team löschen erlaubt?');
     alert('Berechtigungen geändert!');
     saveData();
 }
 
 function deleteMember(i){
-    if(confirm(`Willst du ${teamMembers[i].name} wirklich löschen?`)){
+    if(canDelete(teamMembers[i]) && confirm(`Willst du ${teamMembers[i].name} wirklich löschen?`)){
         teamMembers.splice(i,1);
         saveData();
+        renderPanel();
+    } else {
+        alert('Keine Berechtigung, diesen Account zu löschen!');
     }
 }
 
