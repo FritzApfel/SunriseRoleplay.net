@@ -84,9 +84,6 @@ form > div { margin-bottom: 10px; }
 .panel-content { margin-top: 20px; }
 button.action-btn { background: #ffbb55; color: #000; border-radius: 4px; padding: 6px 12px; cursor: pointer; transition: 0.3s; }
 button.action-btn:hover { background: #ffd480; }
-.yesno-btn { padding: 5px 10px; margin: 0 2px; cursor: pointer; border-radius: 4px; border: none; }
-.yes { background: #4CAF50; color: #fff; }
-.no { background: #f44336; color: #fff; }
 </style>
 </head>
 <body>
@@ -216,16 +213,11 @@ LG Fabian (;
 <div><input type="password" class="team-pass" placeholder="Passwort" required></div>
 <div><input type="file" class="team-avatar" accept="image/png"></div>
 <div><img id="avatar-preview" src="sunriserp.png" class="avatar"></div>
-<div>
-<label><input type="checkbox" class="perm-apps" checked> Bewerbungen bearbeiten</label>
-<label><input type="checkbox" class="perm-bans" checked> Entbannungen bearbeiten</label>
-<label><input type="checkbox" class="perm-team" checked> Team löschen</label>
-</div>
 <button type="submit">Teamaccount erstellen</button>
 </form>
 
 <table class="team-accounts-table">
-<thead><tr><th>Name</th><th>Rolle</th><th>Avatar</th><th>Verwalten</th><th>Löschen</th></tr></thead>
+<thead><tr><th>Name</th><th>Rolle</th><th>Avatar</th><th>Bearbeiten</th><th>Löschen</th></tr></thead>
 <tbody></tbody>
 </table>
 <button class="save-btn">Änderungen speichern</button>
@@ -239,7 +231,7 @@ let bewerbungen = JSON.parse(localStorage.getItem('bewerbungen')) || [];
 let entbannungen = JSON.parse(localStorage.getItem('entbannungen')) || [];
 let currentUser = null;
 
-const createTeamMember = (name, role, pass, avatar='sunriserp.png', permissions={teamAccounts:true, teamApps:true, fraktionApps:true, bans:true, deleteTeam:true}) => ({name, role, pass, avatar, permissions});
+const createTeamMember = (name, role, pass, avatar='sunriserp.png', permissions={teamAccounts:true, teamApps:true, fraktionApps:true, bans:true}) => ({name, role, pass, avatar, permissions});
 const createBewerbung = (art, discord, minecraft, email, position, text) => ({ datum: new Date().toLocaleString(), art, discord, minecraft, email, position, text, notiz:'', status:'offen', bearbeiter:'' });
 const createEntbannung = (minecraft, discord, email, discordban, text) => ({ datum: new Date().toLocaleString(), minecraft, discord, email, discordban, text, notiz:'', status:'offen', bearbeiter:'' });
 
@@ -251,35 +243,54 @@ if(!teamMembers.find(m => m.name === 'Leitung')){
 
 // ----------------- NAVIGATION -----------------
 function showSection(id){
-    document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));
+    document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
+    window.location.hash = id;
+}
+if(window.location.hash) showSection(window.location.hash.substring(1));
+
+// ----------------- RENDER -----------------
+function renderTeam(){
+    const tbody = document.querySelector('.team-table tbody');
+    tbody.innerHTML = '';
+    teamMembers.forEach(m => {
+        tbody.innerHTML += `<tr><td><img src="${m.avatar}" class="avatar"></td><td>${m.name}</td><td>${m.role}</td></tr>`;
+    });
 }
 
-// ----------------- PANEL RENDER -----------------
-function renderPanel(){
+// Bewerbungen und Entbannungen nach Berechtigungen filtern
+function renderPanel() {
     const tbodyT = document.querySelector('.team-accounts-table tbody');
     tbodyT.innerHTML = '';
-    teamMembers.forEach((m,i)=>{
+    teamMembers.forEach((m, i) => {
         tbodyT.innerHTML += `<tr>
-            <td><img src="${m.avatar}" class="avatar"></td>
             <td>${m.name}</td>
             <td>${m.role}</td>
-            <td><button class="action-btn" onclick="editPermissions(${i})"${m.name==='Leitung'?' disabled':''}>Verwalten</button></td>
-            <td>${m.name==='Leitung' ? '' : '<button class="action-btn" onclick="deleteMember('+i+')">Löschen</button>'}</td>
+            <td><img src="${m.avatar}" class="avatar"></td>
+            <td>${m.name === 'Leitung' ? '' : '<button class="action-btn" onclick="editPermissions(' + i + ')">Bearbeiten</button>'}</td>
+            <td>${m.name === 'Leitung' ? '' : '<button class="action-btn" onclick="deleteMember(' + i + ')">Löschen</button>'}</td>
         </tr>`;
     });
 
     // Bewerbungen filtern
     const tbodyB = document.querySelector('.panel-bewerbungen tbody');
     tbodyB.innerHTML = '';
-    bewerbungen.forEach((b)=>{
-        if(currentUser.name==='Leitung' || 
-           (b.art==='Teambewerbung' && currentUser.permissions.teamApps) || 
-           (b.art==='Fraktionsbewerbung' && currentUser.permissions.fraktionApps)){
+    bewerbungen.forEach((b) => {
+        if (currentUser.name === 'Leitung' ||
+            (b.art === 'Teambewerbung' && currentUser.permissions.teamApps) ||
+            (b.art === 'Fraktionsbewerbung' && currentUser.permissions.fraktionApps)) {
             tbodyB.innerHTML += `<tr>
-                <td>${b.datum}</td><td>${b.art}</td><td>${b.discord}</td><td>${b.minecraft}</td>
-                <td>${b.email}</td><td>${b.position||'-'}</td><td>${b.text}</td>
-                <td>${b.notiz||'-'}</td><td>${b.status||'offen'}</td><td>${b.bearbeiter||'-'}</td><td></td>
+                <td>${b.datum}</td>
+                <td>${b.art}</td>
+                <td>${b.discord}</td>
+                <td>${b.minecraft}</td>
+                <td>${b.email}</td>
+                <td>${b.position || '-'}</td>
+                <td>${b.text}</td>
+                <td>${b.notiz || '-'}</td>
+                <td>${b.status || 'offen'}</td>
+                <td>${b.bearbeiter || '-'}</td>
+                <td></td>
             </tr>`;
         }
     });
@@ -287,55 +298,94 @@ function renderPanel(){
     // Entbannungen filtern
     const tbodyE = document.querySelector('.panel-entbannungen tbody');
     tbodyE.innerHTML = '';
-    entbannungen.forEach((e)=>{
-        if(currentUser.name==='Leitung' || currentUser.permissions.bans){
+    entbannungen.forEach((e) => {
+        if (currentUser.name === 'Leitung' || currentUser.permissions.bans) {
             tbodyE.innerHTML += `<tr>
-                <td>${e.datum}</td><td>${e.minecraft}</td><td>${e.discord}</td>
-                <td>${e.email}</td><td>${e.discordban?'Ja':'Nein'}</td>
-                <td>${e.text}</td><td>${e.notiz||'-'}</td><td>${e.status||'offen'}</td>
-                <td>${e.bearbeiter||'-'}</td><td></td>
+                <td>${e.datum}</td>
+                <td>${e.minecraft}</td>
+                <td>${e.discord}</td>
+                <td>${e.email}</td>
+                <td>${e.discordban ? 'Ja' : 'Nein'}</td>
+                <td>${e.text}</td>
+                <td>${e.notiz || '-'}</td>
+                <td>${e.status || 'offen'}</td>
+                <td>${e.bearbeiter || '-'}</td>
+                <td></td>
             </tr>`;
         }
     });
 }
 
-// ----------------- HELPER -----------------
+// Teammitglied bearbeiten
+function editPermissions(i) {
+    const m = teamMembers[i];
+    if (m.name === 'Leitung') { 
+        alert('Leitung-Account kann nicht bearbeitet werden.'); 
+        return; 
+    }
+    const teamAccounts = confirm('Darf Team Accounts bearbeiten?');
+    const fraktionApps = confirm('Darf Fraktionsbewerbungen bearbeiten?');
+    const teamApps = confirm('Darf Team Bewerbungen bearbeiten?');
+    const bans = confirm('Darf Entbannungsanträge bearbeiten?');
+    m.permissions = {teamAccounts, fraktionApps, teamApps, bans};
+    saveData();
+    renderPanel();
+}
+
+// Mitglied löschen
+function deleteMember(i){
+    if(teamMembers[i].name === 'Leitung') return;
+    if(confirm(`Teammitglied ${teamMembers[i].name} wirklich löschen?`)){
+        teamMembers.splice(i,1);
+        saveData();
+        renderTeam();
+        renderPanel();
+    }
+}
+
+// ----------------- LOGIN -----------------
+document.querySelector('.login-form').addEventListener('submit', e=>{
+    e.preventDefault();
+    const user = document.querySelector('.login-user').value;
+    const pass = document.querySelector('.login-pass').value;
+    const found = teamMembers.find(m=>m.name===user && m.pass===pass);
+    if(found){
+        currentUser = found;
+        document.querySelector('.panel-content').style.display='block';
+        alert('Login erfolgreich!');
+        renderPanel();
+    } else alert('Falscher Benutzer oder Passwort!');
+});
+
+// ----------------- TEAM ERSTELLEN -----------------
+document.querySelector('.team-create-form').addEventListener('submit', e=>{
+    e.preventDefault();
+    const name = document.querySelector('.team-name').value;
+    const role = document.querySelector('.team-role').value;
+    const pass = document.querySelector('.team-pass').value;
+    const avatar = document.querySelector('.team-avatar').files[0] ? URL.createObjectURL(document.querySelector('.team-avatar').files[0]) : 'sunriserp.png';
+    teamMembers.push(createTeamMember(name,role,pass,avatar));
+    saveData();
+    renderTeam();
+    renderPanel();
+});
+
+// ----------------- AVATAR PREVIEW -----------------
+document.querySelector('.team-avatar').addEventListener('change', e=>{
+    if(e.target.files[0]){
+        document.getElementById('avatar-preview').src = URL.createObjectURL(e.target.files[0]);
+    }
+});
+
+// ----------------- SAVE -----------------
 function saveData(){
     localStorage.setItem('teamMembers', JSON.stringify(teamMembers));
     localStorage.setItem('bewerbungen', JSON.stringify(bewerbungen));
     localStorage.setItem('entbannungen', JSON.stringify(entbannungen));
 }
 
-// ----------------- EVENTS -----------------
-document.querySelector('.login-form').addEventListener('submit', e=>{
-    e.preventDefault();
-    const user = document.querySelector('.login-user').value;
-    const pass = document.querySelector('.login-pass').value;
-    const acc = teamMembers.find(t=>t.name===user && t.pass===pass);
-    if(acc){
-        currentUser = acc;
-        alert('Erfolgreich eingeloggt!');
-        document.querySelector('.panel-content').style.display='block';
-        renderPanel();
-    }else{
-        alert('Benutzername oder Passwort falsch!');
-    }
-});
-
-document.querySelector('.team-create-form').addEventListener('submit', e=>{
-    e.preventDefault();
-    const name = document.querySelector('.team-name').value;
-    const role = document.querySelector('.team-role').value;
-    const pass = document.querySelector('.team-pass').value;
-    const avatarInput = document.querySelector('.team-avatar');
-    let avatar = 'sunriserp.png';
-    if(avatarInput.files[0]){
-        avatar = URL.createObjectURL(avatarInput.files[0]);
-    }
-    teamMembers.push(createTeamMember(name, role, pass, avatar));
-    saveData();
-    renderPanel();
-});
+// ----------------- RENDER INITIAL -----------------
+renderTeam();
 </script>
 </body>
 </html>
