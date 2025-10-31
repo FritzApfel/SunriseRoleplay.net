@@ -85,6 +85,38 @@ button.action-btn { background: #ffbb55; color: #000; border-radius: 4px; paddin
 button.action-btn:hover { background: #ffd480; }
 .status-select { padding:4px; border-radius:4px; }
 .notiz-input { width:90%; padding:4px; border-radius:4px; }
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 100;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.7);
+}
+.modal-content {
+    background-color: rgba(0,0,0,0.9);
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 400px;
+    border-radius: 10px;
+    color: #fff;
+}
+.modal-content h3 { text-align:center; }
+.modal-content label { display:block; margin:10px 0; }
+.modal-content button { margin-top: 15px; }
+.close-modal {
+    color: #ffbb55;
+    float: right;
+    font-size: 24px;
+    cursor: pointer;
+}
+.close-modal:hover { color: #ffd480; }
 </style>
 </head>
 <body>
@@ -186,7 +218,6 @@ LG Fabian (;
 
 <div class="panel-content" style="display:none;">
 <h3>Bewerbungen</h3>
-<button onclick="bulkBewerbungenSeen()">Alle auf 'gesehen' setzen</button>
 <table class="panel-bewerbungen">
 <thead>
 <tr><th>Datum</th><th>Art</th><th>Discord</th><th>Minecraft</th><th>Email</th><th>Position</th><th>Text</th><th>Notiz</th><th>Status</th><th>Bearbeitet von</th><th>Aktionen</th></tr>
@@ -220,191 +251,92 @@ LG Fabian (;
 </div>
 </section>
 
+<!-- Modal -->
+<div id="permissionsModal" class="modal">
+<div class="modal-content">
+<span class="close-modal" onclick="closeModal()">&times;</span>
+<h3>Team-Account Berechtigungen bearbeiten</h3>
+<label><input type="checkbox" id="permTeamAccounts"> Team-Accounts bearbeiten</label>
+<label><input type="checkbox" id="permFraktionApps"> Fraktion-Bewerbungen bearbeiten</label>
+<label><input type="checkbox" id="permTeamApps"> Team-Bewerbungen bearbeiten</label>
+<label><input type="checkbox" id="permBans"> Entbannungsanträge bearbeiten</label>
+<button id="deleteAccountBtn" style="background:red; color:white;">Account löschen</button>
+<button onclick="savePermissions()" style="margin-left:10px;">Speichern</button>
+</div>
+</div>
+
 <script>
-// Daten und lokale Speicherung
-let teamMembers = JSON.parse(localStorage.getItem('teamMembers')) || [];
-let bewerbungen = JSON.parse(localStorage.getItem('bewerbungen')) || [];
-let entbannungen = JSON.parse(localStorage.getItem('entbannungen')) || [];
-let currentUser = null;
-
-const createTeamMember = (name, role, pass, avatar='sunriserp.png', permissions={teamAccounts:true, teamApps:true, fraktionApps:true, bans:true}) => ({name, role, pass, avatar, permissions});
-const createBewerbung = (art, discord, minecraft, email, position, text) => ({ datum: new Date().toLocaleString(), art, discord, minecraft, email, position, text, notiz:'', status:'offen', bearbeiter:'' });
-const createEntbannung = (minecraft, discord, email, discordban, text) => ({ datum: new Date().toLocaleString(), minecraft, discord, email, discordban, text, notiz:'', status:'offen', bearbeiter:'' });
-
-// Standard-Leitung erstellen, falls nicht vorhanden
-if(!teamMembers.find(m => m.name === 'Leitung')){
-    teamMembers.unshift(createTeamMember('Leitung','Leitung','L3!t@d#SunR1$e2025'));
-    saveData();
-}
-
-function showSection(id){
+function showSection(sectionId) {
     document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    window.location.hash = id;
-}
-if(window.location.hash) showSection(window.location.hash.substring(1));
-
-function renderTeam(){
-    const tbody = document.querySelector('.team-table tbody');
-    tbody.innerHTML = '';
-    teamMembers.forEach(m => {
-        tbody.innerHTML += `<tr><td><img src="${m.avatar}" class="avatar"></td><td>${m.name}</td><td>${m.role}</td></tr>`;
-    });
+    document.getElementById(sectionId).classList.add('active');
 }
 
-function renderPanel() {
-    const tbodyT = document.querySelector('.team-accounts-table tbody');
-    tbodyT.innerHTML = '';
-    teamMembers.forEach((m, i) => {
-        tbodyT.innerHTML += `<tr>
-            <td>${m.name}</td>
-            <td>${m.role}</td>
-            <td><img src="${m.avatar}" class="avatar"></td>
-            <td>${m.name === 'Leitung' ? '' : '<button class="action-btn" onclick="editPermissions(' + i + ')">Bearbeiten</button>'}</td>
-            <td>${m.name === 'Leitung' ? '' : '<button class="action-btn" onclick="deleteMember(' + i + ')">Löschen</button>'}</td>
-        </tr>`;
-    });
+function togglePositionField() {
+    const art = document.querySelector('.bewerbungs-art').value;
+    document.querySelector('.team-positionen').style.display = art === 'Teambewerbung' ? 'block' : 'none';
+}
 
-    const tbodyB = document.querySelector('.panel-bewerbungen tbody');
-    tbodyB.innerHTML = '';
-    bewerbungen.forEach((b, i) => {
-        if(currentUser.name === 'Leitung' || 
-           (b.art === 'Teambewerbung' && currentUser.permissions.teamApps) ||
-           (b.art === 'Fraktionsbewerbung' && currentUser.permissions.fraktionApps)){
-            tbodyB.innerHTML += `<tr>
-                <td>${b.datum}</td>
-                <td>${b.art}</td>
-                <td>${b.discord}</td>
-                <td>${b.minecraft}</td>
-                <td>${b.email}</td>
-                <td>${b.position||''}</td>
-                <td>${b.text}</td>
-                <td><input type="text" class="notiz-input" value="${b.notiz}" onchange="updateBewerbungNotiz(${i}, this.value)"></td>
-                <td>
-                    <select class="status-select" onchange="updateBewerbungStatus(${i}, this.value)">
-                        <option ${b.status==='offen'?'selected':''}>offen</option>
-                        <option ${b.status==='gesehen'?'selected':''}>gesehen</option>
-                        <option ${b.status==='angenommen'?'selected':''}>angenommen</option>
-                        <option ${b.status==='abgelehnt'?'selected':''}>abgelehnt</option>
-                    </select>
-                </td>
-                <td>${b.bearbeiter}</td>
-                <td></td>
-            </tr>`;
+// Modal
+let currentAccountRow = null;
+function openModal(row) {
+    currentAccountRow = row;
+    const perms = {
+        permTeamAccounts: row.dataset.permTeamAccounts === 'true',
+        permFraktionApps: row.dataset.permFraktionApps === 'true',
+        permTeamApps: row.dataset.permTeamApps === 'true',
+        permBans: row.dataset.permBans === 'true'
+    };
+    document.getElementById('permTeamAccounts').checked = perms.permTeamAccounts;
+    document.getElementById('permFraktionApps').checked = perms.permFraktionApps;
+    document.getElementById('permTeamApps').checked = perms.permTeamApps;
+    document.getElementById('permBans').checked = perms.permBans;
+    document.getElementById('permissionsModal').style.display = 'block';
+}
+
+function closeModal() {
+    document.getElementById('permissionsModal').style.display = 'none';
+}
+
+function savePermissions() {
+    if(!currentAccountRow) return;
+    currentAccountRow.dataset.permTeamAccounts = document.getElementById('permTeamAccounts').checked;
+    currentAccountRow.dataset.permFraktionApps = document.getElementById('permFraktionApps').checked;
+    currentAccountRow.dataset.permTeamApps = document.getElementById('permTeamApps').checked;
+    currentAccountRow.dataset.permBans = document.getElementById('permBans').checked;
+    closeModal();
+}
+
+// Delete
+document.getElementById('deleteAccountBtn').onclick = function() {
+    if(currentAccountRow) {
+        if(confirm("Willst du diesen Account wirklich löschen?")) {
+            currentAccountRow.remove();
+            closeModal();
         }
-    });
+    }
+};
 
-    const tbodyE = document.querySelector('.panel-entbannungen tbody');
-    tbodyE.innerHTML = '';
-    entbannungen.forEach((e, i) => {
-        if(currentUser.name === 'Leitung' || currentUser.permissions.bans){
-            tbodyE.innerHTML += `<tr>
-                <td>${e.datum}</td>
-                <td>${e.minecraft}</td>
-                <td>${e.discord}</td>
-                <td>${e.email}</td>
-                <td>${e.discordban?'Ja':'Nein'}</td>
-                <td>${e.text}</td>
-                <td><input type="text" class="notiz-input" value="${e.notiz}" onchange="updateEntbannungNotiz(${i}, this.value)"></td>
-                <td>
-                    <select class="status-select" onchange="updateEntbannungStatus(${i}, this.value)">
-                        <option ${e.status==='offen'?'selected':''}>offen</option>
-                        <option ${e.status==='gesehen'?'selected':''}>gesehen</option>
-                        <option ${e.status==='angenommen'?'selected':''}>angenommen</option>
-                        <option ${e.status==='abgelehnt'?'selected':''}>abgelehnt</option>
-                    </select>
-                </td>
-                <td>${e.bearbeiter}</td>
-                <td></td>
-            </tr>`;
-        }
-    });
-}
-
-function saveData(){
-    localStorage.setItem('teamMembers', JSON.stringify(teamMembers));
-    localStorage.setItem('bewerbungen', JSON.stringify(bewerbungen));
-    localStorage.setItem('entbannungen', JSON.stringify(entbannungen));
-}
-
-// Bewerbungen & Entbannungen updaten
-function updateBewerbungNotiz(i, val){ bewerbungen[i].notiz=val; saveData(); }
-function updateBewerbungStatus(i,val){ bewerbungen[i].status=val; bewerbungen[i].bearbeiter=currentUser.name; saveData(); renderPanel();}
-function updateEntbannungNotiz(i,val){ entbannungen[i].notiz=val; saveData();}
-function updateEntbannungStatus(i,val){ entbannungen[i].status=val; entbannungen[i].bearbeiter=currentUser.name; saveData(); renderPanel();}
-function bulkBewerbungenSeen(){ bewerbungen.forEach(b=>b.status='gesehen'); saveData(); renderPanel(); }
-
-// Team bearbeiten/löschen
-function editPermissions(i){ alert('Berechtigungen bearbeiten: '+teamMembers[i].name); }
-function deleteMember(i){ if(confirm('Teammitglied löschen?')){ teamMembers.splice(i,1); saveData(); renderPanel(); renderTeam(); }}
-
-// Login
-document.querySelector('.login-form').addEventListener('submit', e=>{
-    e.preventDefault();
-    const user = document.querySelector('.login-user').value;
-    const pass = document.querySelector('.login-pass').value;
-    const match = teamMembers.find(m=>m.name===user && m.pass===pass);
-    if(match){ currentUser=match; document.querySelector('.panel-content').style.display='block'; renderPanel(); alert('Eingeloggt als '+user);}
-    else alert('Falscher Benutzername oder Passwort');
+// Beispiel: Teamaccounts Tabelle dynamisch füllen
+const teamTableBody = document.querySelector('.team-accounts-table tbody');
+const exampleAccounts = [
+    {name:'Fabian', role:'Admin', avatar:'sunriserp.png', permTeamAccounts:true, permFraktionApps:true, permTeamApps:true, permBans:true},
+    {name:'Max', role:'Supporter', avatar:'sunriserp.png', permTeamAccounts:false, permFraktionApps:true, permTeamApps:false, permBans:true}
+];
+exampleAccounts.forEach(acc => {
+    const tr = document.createElement('tr');
+    tr.dataset.permTeamAccounts = acc.permTeamAccounts;
+    tr.dataset.permFraktionApps = acc.permFraktionApps;
+    tr.dataset.permTeamApps = acc.permTeamApps;
+    tr.dataset.permBans = acc.permBans;
+    tr.innerHTML = `
+        <td>${acc.name}</td>
+        <td>${acc.role}</td>
+        <td><img src="${acc.avatar}" class="avatar"></td>
+        <td><button class="action-btn" onclick="openModal(this.parentElement.parentElement)">Bearbeiten</button></td>
+        <td><button class="action-btn" style="background:red;" onclick="if(confirm('Willst du diesen Account wirklich löschen?')) this.parentElement.parentElement.remove();">Löschen</button></td>
+    `;
+    teamTableBody.appendChild(tr);
 });
-
-// Bewerbungsformular
-document.querySelector('.bewerbung-form').addEventListener('submit', e=>{
-    e.preventDefault();
-    const art=document.querySelector('.bewerbungs-art').value;
-    const discord=document.querySelector('.bewerbung-discord').value;
-    const minecraft=document.querySelector('.bewerbung-minecraft').value;
-    const email=document.querySelector('.bewerbung-email').value;
-    const position=document.querySelector('.bewerbung-position')?.value||'';
-    const text=document.querySelector('.bewerbung-text').value;
-    bewerbungen.push(createBewerbung(art,discord,minecraft,email,position,text));
-    saveData();
-    alert('Bewerbung erfolgreich eingereicht!');
-    e.target.reset();
-});
-
-// Entbannungsformular
-document.querySelector('.entbannung-form').addEventListener('submit', e=>{
-    e.preventDefault();
-    const minecraft=document.querySelector('.entbannung-minecraft').value;
-    const discord=document.querySelector('.entbannung-discord').value;
-    const email=document.querySelector('.entbannung-email').value;
-    const discordban=document.querySelector('.entbannung-discordban').checked;
-    const text=document.querySelector('.entbannung-text').value;
-    entbannungen.push(createEntbannung(minecraft,discord,email,discordban,text));
-    saveData();
-    alert('Entbannungsantrag erfolgreich eingereicht!');
-    e.target.reset();
-});
-
-// Teamaccount erstellen
-document.querySelector('.team-create-form').addEventListener('submit', e=>{
-    e.preventDefault();
-    const name=document.querySelector('.team-name').value;
-    const role=document.querySelector('.team-role').value;
-    const pass=document.querySelector('.team-pass').value;
-    const avatar=document.querySelector('.team-avatar').files[0] ? URL.createObjectURL(document.querySelector('.team-avatar').files[0]) : 'sunriserp.png';
-    teamMembers.push(createTeamMember(name,role,pass,avatar));
-    saveData();
-    renderPanel();
-    renderTeam();
-    e.target.reset();
-    document.getElementById('avatar-preview').src='sunriserp.png';
-});
-
-// Avatar-Vorschau
-document.querySelector('.team-avatar').addEventListener('change', function(){
-    if(this.files[0]) document.getElementById('avatar-preview').src = URL.createObjectURL(this.files[0]);
-});
-
-// Bewerbungsart Positionfeld
-function togglePositionField(){
-    const art=document.querySelector('.bewerbungs-art').value;
-    document.querySelector('.team-positionen').style.display = (art==='Teambewerbung')?'block':'none';
-}
-
-// Initiales Rendern
-renderTeam();
 </script>
 </body>
 </html>
