@@ -88,12 +88,8 @@ button.action-btn:hover { background: #ffd480; }
   cursor: pointer;
   margin: 5px;
 }
-.permission-toggle.active {
-  background: #4caf50;
-}
-.permission-toggle.inactive {
-  background: #c0392b;
-}
+.permission-toggle.active { background: #4caf50; }
+.permission-toggle.inactive { background: #c0392b; }
 </style>
 </head>
 
@@ -130,7 +126,7 @@ button.action-btn:hover { background: #ffd480; }
   </form>
 </section>
 
-<!-- ENTBANNUNGSANTRAG -->
+<!-- ENTBANNUNG -->
 <section id="entbannung">
   <h2>Entbannungsantrag</h2>
   <form id="entbannungForm">
@@ -153,17 +149,20 @@ button.action-btn:hover { background: #ffd480; }
   </form>
 
   <div id="panelContent" style="display:none;">
-    <h3>Teammitglieder</h3>
-    <table id="teamTable">
-      <thead><tr><th>Name</th><th>Rolle</th><th>Aktion</th></tr></thead>
+    <h3>Bewerbungen</h3>
+    <table id="bewerbungTable">
+      <thead><tr><th>Datum</th><th>Art</th><th>Position</th><th>Discord</th><th>Minecraft</th><th>Email</th><th>Text</th></tr></thead>
       <tbody></tbody>
     </table>
 
-    <div id="manageView" style="display:none;">
-      <h3 id="manageTitle">Berechtigungen verwalten</h3>
-      <div id="permissionControls"></div>
-      <button onclick="backToPanel()">Zurück</button>
-    </div>
+    <h3>Entbannungsanträge</h3>
+    <table id="entbannTable">
+      <thead><tr><th>Datum</th><th>Minecraft</th><th>Discord</th><th>Email</th><th>Begründung</th><th>Discord-Ban?</th></tr></thead>
+      <tbody></tbody>
+    </table>
+
+    <h3>Teamverwaltung</h3>
+    <div id="teamManageArea"></div>
   </div>
 </section>
 
@@ -173,90 +172,160 @@ let currentUser = null;
 let team = JSON.parse(localStorage.getItem('team')) || [
   {name:"Leitung", role:"Leitung", pass:LEITUNG_PASS, permissions:{teamManage:true, teamApps:true, fracApps:true, bans:true}}
 ];
+let bewerbungen = JSON.parse(localStorage.getItem('bewerbungen')) || [];
+let entbannungen = JSON.parse(localStorage.getItem('entbannungen')) || [];
 
-function saveTeam(){ localStorage.setItem('team', JSON.stringify(team)); }
+function saveAll(){
+  localStorage.setItem('team', JSON.stringify(team));
+  localStorage.setItem('bewerbungen', JSON.stringify(bewerbungen));
+  localStorage.setItem('entbannungen', JSON.stringify(entbannungen));
+}
 
 function showSection(id){
   document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
   document.getElementById(id).classList.add("active");
 }
 
-// Toggle Position
-function toggleTeamPosition(){
-  document.getElementById("teamPositionDiv").style.display =
-    document.getElementById("bewerbungsArt").value === "Teambewerbung" ? "block" : "none";
-}
+// Bewerbung speichern
+document.getElementById("bewerbungForm").addEventListener("submit", e=>{
+  e.preventDefault();
+  const art = document.getElementById("bewerbungsArt").value;
+  const pos = art==="Teambewerbung" ? document.getElementById("bewerbungPosition").value : "-";
+  const entry = {
+    datum:new Date().toLocaleString(),
+    art:art,
+    position:pos,
+    discord:document.getElementById("bewerbungDiscord").value,
+    minecraft:document.getElementById("bewerbungMinecraft").value,
+    email:document.getElementById("bewerbungEmail").value,
+    text:document.getElementById("bewerbungText").value
+  };
+  bewerbungen.push(entry);
+  saveAll();
+  alert("Bewerbung wurde eingereicht!");
+  e.target.reset();
+  toggleTeamPosition();
+});
+
+// Entbannung speichern
+document.getElementById("entbannungForm").addEventListener("submit", e=>{
+  e.preventDefault();
+  const entry={
+    datum:new Date().toLocaleString(),
+    minecraft:document.getElementById("entbannMinecraft").value,
+    discord:document.getElementById("entbannDiscord").value,
+    email:document.getElementById("entbannEmail").value,
+    text:document.getElementById("entbannText").value,
+    discordban:document.getElementById("entbannDiscordBan").checked
+  };
+  entbannungen.push(entry);
+  saveAll();
+  alert("Entbannungsantrag wurde eingereicht!");
+  e.target.reset();
+});
 
 // LOGIN
 document.getElementById("loginForm").addEventListener("submit", e=>{
   e.preventDefault();
-  const user = document.getElementById("loginUser").value;
-  const pass = document.getElementById("loginPass").value;
-  const found = team.find(t=>t.name===user && t.pass===pass);
+  const user=document.getElementById("loginUser").value;
+  const pass=document.getElementById("loginPass").value;
+  const found=team.find(t=>t.name===user && t.pass===pass);
   if(found){
-    currentUser = found;
+    currentUser=found;
     document.getElementById("loginForm").style.display="none";
     document.getElementById("panelContent").style.display="block";
-    renderTeamTable();
-  } else {
-    alert("Falsche Zugangsdaten!");
-  }
+    renderPanel();
+  } else alert("Falsche Zugangsdaten!");
 });
 
-// TEAM TABELLE
-function renderTeamTable(){
-  const tbody = document.querySelector("#teamTable tbody");
-  tbody.innerHTML="";
-  team.forEach((m,i)=>{
-    const canManage = currentUser.name==="Leitung" || currentUser.permissions.teamManage;
-    const manageBtn = canManage ? `<button class="action-btn" onclick="openManage(${i})">Verwalten</button>` : "—";
-    tbody.innerHTML += `<tr><td>${m.name}</td><td>${m.role}</td><td>${manageBtn}</td></tr>`;
-  });
+function toggleTeamPosition(){
+  document.getElementById("teamPositionDiv").style.display=
+    document.getElementById("bewerbungsArt").value==="Teambewerbung"?"block":"none";
 }
 
-// VERWALTEN
+// Render Panel
+function renderPanel(){
+  const btbody=document.querySelector("#bewerbungTable tbody");
+  btbody.innerHTML="";
+  bewerbungen.forEach(b=>{
+    if((b.art==="Teambewerbung" && !currentUser.permissions.teamApps) ||
+       (b.art==="Fraktionsbewerbung" && !currentUser.permissions.fracApps)) return;
+    btbody.innerHTML+=`<tr><td>${b.datum}</td><td>${b.art}</td><td>${b.position}</td><td>${b.discord}</td><td>${b.minecraft}</td><td>${b.email}</td><td>${b.text}</td></tr>`;
+  });
+
+  const etbody=document.querySelector("#entbannTable tbody");
+  etbody.innerHTML="";
+  entbannungen.forEach(e=>{
+    if(!currentUser.permissions.bans) return;
+    etbody.innerHTML+=`<tr><td>${e.datum}</td><td>${e.minecraft}</td><td>${e.discord}</td><td>${e.email}</td><td>${e.text}</td><td>${e.discordban?"Ja":"Nein"}</td></tr>`;
+  });
+
+  const tdiv=document.getElementById("teamManageArea");
+  tdiv.innerHTML="";
+  if(currentUser.name==="Leitung" || currentUser.permissions.teamManage){
+    let html=`<form id="teamCreateForm">
+      <input type="text" id="newName" placeholder="Name" required>
+      <input type="text" id="newRole" placeholder="Rolle" required>
+      <input type="password" id="newPass" placeholder="Passwort" required>
+      <button type="submit">Teamaccount erstellen</button>
+    </form>`;
+    html+=`<table><thead><tr><th>Name</th><th>Rolle</th><th>Aktion</th></tr></thead><tbody>`;
+    team.forEach((m,i)=>{
+      const canEdit=(currentUser.name==="Leitung"||currentUser.permissions.teamManage)&&m.name!=="Leitung";
+      html+=`<tr><td>${m.name}</td><td>${m.role}</td><td>${canEdit?`<button class='action-btn' onclick='openManage(${i})'>Verwalten</button>`:"—"}</td></tr>`;
+    });
+    html+=`</tbody></table><div id="manageView" style="display:none;"><h3 id="manageTitle"></h3><div id="permissionControls"></div><button onclick="backToTeam()">Zurück</button></div>`;
+    tdiv.innerHTML=html;
+
+    document.getElementById("teamCreateForm").addEventListener("submit",ev=>{
+      ev.preventDefault();
+      team.push({name:document.getElementById("newName").value, role:document.getElementById("newRole").value, pass:document.getElementById("newPass").value, permissions:{teamManage:false,teamApps:false,fracApps:false,bans:false}});
+      saveAll(); renderPanel();
+    });
+  }
+}
+
+// MANAGE VIEW
 let selectedIndex=null;
 function openManage(i){
   selectedIndex=i;
-  document.querySelector("#teamTable").style.display="none";
+  document.querySelector("#teamManageArea table").style.display="none";
   document.querySelector("#manageView").style.display="block";
-  const m = team[i];
-  document.getElementById("manageTitle").innerText = `Berechtigungen von ${m.name}`;
-  const perms = [
-    {key:"teamManage", label:"Team Accounts verwalten"},
-    {key:"teamApps", label:"Teambewerbungen einsehen"},
-    {key:"fracApps", label:"Fraktionsbewerbungen einsehen"},
-    {key:"bans", label:"Entbannungsanträge einsehen"}
+  const m=team[i];
+  document.getElementById("manageTitle").innerText=`Berechtigungen von ${m.name}`;
+  const perms=[
+    {key:"teamManage",label:"Team Accounts verwalten"},
+    {key:"teamApps",label:"Teambewerbungen einsehen"},
+    {key:"fracApps",label:"Fraktionsbewerbungen einsehen"},
+    {key:"bans",label:"Entbannungsanträge einsehen"}
   ];
   const container=document.getElementById("permissionControls");
   container.innerHTML="";
   perms.forEach(p=>{
     const state=m.permissions[p.key];
-    container.innerHTML += `
+    container.innerHTML+=`
       <div>
         <span>${p.label}</span><br>
         <button class="permission-toggle ${state?'active':'inactive'}" onclick="togglePermission('${p.key}',this)">
           ${state?'Ja':'Nein'}
         </button>
-      </div>
-    `;
+      </div>`;
   });
 }
 
-function togglePermission(key, btn){
+function togglePermission(key,btn){
   const m=team[selectedIndex];
   m.permissions[key]=!m.permissions[key];
-  btn.classList.toggle('active',m.permissions[key]);
-  btn.classList.toggle('inactive',!m.permissions[key]);
-  btn.innerText=m.permissions[key]?'Ja':'Nein';
-  saveTeam();
+  btn.classList.toggle("active",m.permissions[key]);
+  btn.classList.toggle("inactive",!m.permissions[key]);
+  btn.innerText=m.permissions[key]?"Ja":"Nein";
+  saveAll();
 }
 
-function backToPanel(){
+function backToTeam(){
   document.querySelector("#manageView").style.display="none";
-  document.querySelector("#teamTable").style.display="table";
-  saveTeam();
-  renderTeamTable();
+  document.querySelector("#teamManageArea table").style.display="table";
+  renderPanel();
 }
 </script>
 </body>
