@@ -107,7 +107,6 @@ button.action-btn:hover { background: #ffd480; }
 
 <div class="panel-content" style="display:none;">
 
-<!-- News erstellen nur sichtbar wenn Berechtigung -->
 <h3>News erstellen</h3>
 <form class="news-form" id="news-form-section">
 <input type="text" class="news-title" placeholder="Titel" required>
@@ -128,7 +127,6 @@ button.action-btn:hover { background: #ffd480; }
 <tbody></tbody>
 </table>
 
-<!-- Teamverwaltung nur sichtbar wenn Berechtigung -->
 <h3 id="team-create-title">Teamverwaltung</h3>
 <form class="team-create-form" id="team-create-form-section">
 <input type="text" class="team-name" placeholder="Name" required>
@@ -157,6 +155,7 @@ button.action-btn:hover { background: #ffd480; }
 <label><input type="checkbox" id="perm-teamapps"> Team-Bewerbungen bearbeiten</label>
 <label><input type="checkbox" id="perm-fraktionapps"> Firmen-Bewerbungen bearbeiten</label>
 <label><input type="checkbox" id="perm-news"> News erstellen</label>
+<label><input type="checkbox" id="perm-teamAccountsVerwalten"> Team Account verwalten</label>
 <button id="save-team">Speichern</button>
 <button id="delete-team">Account löschen</button>
 </div>
@@ -174,7 +173,6 @@ button.action-btn:hover { background: #ffd480; }
 </div>
 
 <script>
-// ================== Daten ==================
 let teamMembers = JSON.parse(localStorage.getItem('teamMembers')) || [];
 let bewerbungen = JSON.parse(localStorage.getItem('bewerbungen')) || [];
 let entbannungen = JSON.parse(localStorage.getItem('entbannungen')) || [];
@@ -184,22 +182,19 @@ let editingIndex = null;
 let currentAntragIndex = null;
 let currentAntragType = null;
 
-// Standard Leitung
 if(!teamMembers.find(m=>m.name==='Leitung')){
     teamMembers.unshift({
         name:'Leitung',role:'Leitung',pass:'Leitung123',avatar:'sunriserp.png',
-        permissions:{bans:true,teamApps:true,fraktionApps:true,news:true,teamAccounts:true}
+        permissions:{bans:true,teamApps:true,fraktionApps:true,news:true,teamAccountsVerwalten:true}
     });
     localStorage.setItem('teamMembers',JSON.stringify(teamMembers));
 }
 
-// ================== Navigation ==================
 function showSection(id){
     document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
 }
 
-// ================== Bewerbungen ==================
 document.querySelector('.bewerbung-form').addEventListener('submit', e=>{
     e.preventDefault();
     const art=document.querySelector('.bewerbungs-art').value;
@@ -215,7 +210,6 @@ document.querySelector('.bewerbung-form').addEventListener('submit', e=>{
     renderBewerbungen();
 });
 
-// ================== Entbannung ==================
 document.querySelector('.entbannung-form').addEventListener('submit', e=>{
     e.preventDefault();
     const minecraft=document.querySelector('.entbannung-minecraft').value;
@@ -230,7 +224,6 @@ document.querySelector('.entbannung-form').addEventListener('submit', e=>{
     renderEntbannungen();
 });
 
-// ================== Admin Login ==================
 document.querySelector('.login-form').addEventListener('submit', e=>{
     e.preventDefault();
     const user=document.querySelector('.login-user').value;
@@ -245,31 +238,25 @@ document.querySelector('.login-form').addEventListener('submit', e=>{
     } else alert('Falscher Benutzername oder Passwort!');
 });
 
-// ================== Berechtigungen anwenden ==================
 function applyPermissions(){
-    // News-Formular
     document.getElementById('news-form-section').style.display=currentUser.permissions.news || currentUser.role==='Leitung' ? 'block':'none';
-    // Team-Erstellen Formular
-    document.getElementById('team-create-form-section').style.display=currentUser.permissions.teamAccounts || currentUser.role==='Leitung' ? 'block':'none';
-    document.getElementById('team-create-title').style.display=currentUser.permissions.teamAccounts || currentUser.role==='Leitung' ? 'block':'none';
+    document.getElementById('team-create-form-section').style.display=currentUser.permissions.teamAccountsVerwalten || currentUser.role==='Leitung' ? 'block':'none';
+    document.getElementById('team-create-title').style.display=currentUser.permissions.teamAccountsVerwalten || currentUser.role==='Leitung' ? 'block':'none';
 }
 
-// ================== Team erstellen ==================
 document.querySelector('.team-create-form').addEventListener('submit', e=>{
     e.preventDefault();
     const name=document.querySelector('.team-name').value;
     const role=document.querySelector('.team-role').value;
     const pass=document.querySelector('.team-pass').value;
     const avatar=document.getElementById('avatar-preview').src;
-    teamMembers.push({name,role,pass,avatar,permissions:{bans:false,teamApps:false,fraktionApps:false,news:false,teamAccounts:true}});
+    teamMembers.push({name,role,pass,avatar,permissions:{bans:false,teamApps:false,fraktionApps:false,news:false,teamAccountsVerwalten:true}});
     localStorage.setItem('teamMembers',JSON.stringify(teamMembers));
     e.target.reset();
     document.getElementById('avatar-preview').src='sunriserp.png';
-    renderTeam();
-    renderPanel();
+    renderTeam(); renderPanel();
 });
 
-// ================== Avatar Vorschau ==================
 document.querySelector('.team-avatar').addEventListener('change', e=>{
     const file=e.target.files[0];
     if(file){
@@ -279,12 +266,11 @@ document.querySelector('.team-avatar').addEventListener('change', e=>{
     }
 });
 
-// ================== Panel rendern ==================
 function renderPanel(){
     const tbodyT=document.querySelector('.team-accounts-table tbody');
     tbodyT.innerHTML='';
     teamMembers.forEach((m,i)=>{
-        const canEdit=currentUser.permissions.teamAccounts || currentUser.role==='Leitung';
+        const canEdit=currentUser.permissions.teamAccountsVerwalten || currentUser.role==='Leitung';
         tbodyT.innerHTML+=`<tr>
         <td>${m.name}</td><td>${m.role}</td><td><img src="${m.avatar}" class="avatar"></td>
         <td>${(canEdit && m.name!=='Leitung')?`<button class="action-btn" onclick="openModal(${i})">Bearbeiten</button>`:''}</td>
@@ -292,7 +278,6 @@ function renderPanel(){
     });
 }
 
-// ================== Team rendern ==================
 function renderTeam(){
     const tbody=document.querySelector('.team-table tbody');
     tbody.innerHTML='';
@@ -301,7 +286,6 @@ function renderTeam(){
     });
 }
 
-// ================== Bewerbungen rendern ==================
 function renderBewerbungen(){
     const tbody=document.querySelector('.bewerbungen-table tbody');
     tbody.innerHTML='';
@@ -315,7 +299,6 @@ function renderBewerbungen(){
     });
 }
 
-// ================== Entbannungen rendern ==================
 function renderEntbannungen(){
     const tbody=document.querySelector('.entbannungen-table tbody');
     tbody.innerHTML='';
@@ -327,7 +310,6 @@ function renderEntbannungen(){
     });
 }
 
-// ================== Antrag Modal ==================
 function openAntrag(type,index){
     currentAntragIndex=index;
     currentAntragType=type;
@@ -371,13 +353,11 @@ document.getElementById('save-antrag').addEventListener('click',()=>{
     closeAntragModal();
 });
 
-// ================== Teambewerbung Feld ==================
 function togglePositionField(){
     const val=document.querySelector('.bewerbungs-art').value;
     document.querySelector('.team-positionen').style.display=val==='Teambewerbung'?'block':'none';
 }
 
-// ================== Modal Team ==================
 function openModal(i){
     editingIndex=i;
     const m=teamMembers[i];
@@ -388,6 +368,7 @@ function openModal(i){
     document.getElementById('perm-teamapps').checked=m.permissions.teamApps;
     document.getElementById('perm-fraktionapps').checked=m.permissions.fraktionApps;
     document.getElementById('perm-news').checked=m.permissions.news;
+    document.getElementById('perm-teamAccountsVerwalten').checked=m.permissions.teamAccountsVerwalten || false;
     document.getElementById('team-modal').style.display='flex';
 }
 function closeModal(){ document.getElementById('team-modal').style.display='none'; }
@@ -402,6 +383,7 @@ document.getElementById('save-team').addEventListener('click', ()=>{
     m.permissions.teamApps=document.getElementById('perm-teamapps').checked;
     m.permissions.fraktionApps=document.getElementById('perm-fraktionapps').checked;
     m.permissions.news=document.getElementById('perm-news').checked;
+    m.permissions.teamAccountsVerwalten=document.getElementById('perm-teamAccountsVerwalten').checked;
     localStorage.setItem('teamMembers',JSON.stringify(teamMembers));
     renderPanel(); renderTeam(); closeModal();
 });
@@ -419,7 +401,28 @@ document.getElementById('delete-team').addEventListener('click', ()=>{
     }
 });
 
-// ================== News ==================
+document.querySelector('.news-form').addEventListener('submit', e=>{
+    e.preventDefault();
+    if(!currentUser || !currentUser.permissions.news){ alert('Keine Berechtigung!'); return; }
+    const title=document.querySelector('.news-title').value;
+    const text=document.querySelector('.news-text').value;
+    const file=document.querySelector('.news-img').files[0];
+    if(file){
+        const reader=new FileReader();
+        reader.onload=ev=>{
+            news.push({title,text,img:ev.target.result});
+            localStorage.setItem('news',JSON.stringify(news));
+            renderNews();
+        };
+        reader.readAsDataURL(file);
+    } else {
+        news.push({title,text,img:null});
+        localStorage.setItem('news',JSON.stringify(news));
+        renderNews();
+    }
+    e.target.reset();
+});
+
 function renderNews(){
     const container=document.getElementById('news-list');
     container.innerHTML='';
@@ -433,7 +436,6 @@ function renderNews(){
     });
 }
 
-// ================== Initial render ==================
 renderTeam();
 renderPanel();
 renderNews();
