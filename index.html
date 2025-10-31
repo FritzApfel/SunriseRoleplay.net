@@ -106,8 +106,10 @@ button.action-btn:hover { background: #ffd480; }
 </form>
 
 <div class="panel-content" style="display:none;">
+
+<!-- News erstellen nur sichtbar wenn Berechtigung -->
 <h3>News erstellen</h3>
-<form class="news-form">
+<form class="news-form" id="news-form-section">
 <input type="text" class="news-title" placeholder="Titel" required>
 <input type="file" class="news-img" accept="image/*">
 <textarea class="news-text" placeholder="Text" required></textarea>
@@ -126,8 +128,9 @@ button.action-btn:hover { background: #ffd480; }
 <tbody></tbody>
 </table>
 
-<h3>Teamverwaltung</h3>
-<form class="team-create-form">
+<!-- Teamverwaltung nur sichtbar wenn Berechtigung -->
+<h3 id="team-create-title">Teamverwaltung</h3>
+<form class="team-create-form" id="team-create-form-section">
 <input type="text" class="team-name" placeholder="Name" required>
 <input type="text" class="team-role" placeholder="Rolle" required>
 <input type="password" class="team-pass" placeholder="Passwort" required>
@@ -233,9 +236,23 @@ document.querySelector('.login-form').addEventListener('submit', e=>{
     const user=document.querySelector('.login-user').value;
     const pass=document.querySelector('.login-pass').value;
     const u=teamMembers.find(m=>m.name===user && m.pass===pass);
-    if(u){currentUser=u; alert('Erfolgreich eingeloggt!'); document.querySelector('.panel-content').style.display='block'; renderPanel(); renderNews(); renderBewerbungen(); renderEntbannungen(); renderTeam();} 
-    else alert('Falscher Benutzername oder Passwort!');
+    if(u){
+        currentUser=u;
+        alert('Erfolgreich eingeloggt!');
+        document.querySelector('.panel-content').style.display='block';
+        applyPermissions();
+        renderPanel(); renderNews(); renderBewerbungen(); renderEntbannungen(); renderTeam();
+    } else alert('Falscher Benutzername oder Passwort!');
 });
+
+// ================== Berechtigungen anwenden ==================
+function applyPermissions(){
+    // News-Formular
+    document.getElementById('news-form-section').style.display=currentUser.permissions.news || currentUser.role==='Leitung' ? 'block':'none';
+    // Team-Erstellen Formular
+    document.getElementById('team-create-form-section').style.display=currentUser.permissions.teamAccounts || currentUser.role==='Leitung' ? 'block':'none';
+    document.getElementById('team-create-title').style.display=currentUser.permissions.teamAccounts || currentUser.role==='Leitung' ? 'block':'none';
+}
 
 // ================== Team erstellen ==================
 document.querySelector('.team-create-form').addEventListener('submit', e=>{
@@ -284,101 +301,27 @@ function renderTeam(){
     });
 }
 
-// ================== Modal ==================
-function openModal(i){
-    editingIndex=i;
-    const m=teamMembers[i];
-    document.getElementById('modal-name').value=m.name;
-    document.getElementById('modal-role').value=m.role;
-    document.getElementById('modal-pass').value=m.pass;
-    document.getElementById('perm-bans').checked=m.permissions.bans;
-    document.getElementById('perm-teamapps').checked=m.permissions.teamApps;
-    document.getElementById('perm-fraktionapps').checked=m.permissions.fraktionApps;
-    document.getElementById('perm-news').checked=m.permissions.news;
-    document.getElementById('team-modal').style.display='flex';
-}
-function closeModal(){ document.getElementById('team-modal').style.display='none'; }
-
-// ================== Modal speichern ==================
-document.getElementById('save-team').addEventListener('click', ()=>{
-    if(editingIndex===null) return;
-    const m=teamMembers[editingIndex];
-    m.name=document.getElementById('modal-name').value;
-    m.role=document.getElementById('modal-role').value;
-    m.pass=document.getElementById('modal-pass').value;
-    m.permissions.bans=document.getElementById('perm-bans').checked;
-    m.permissions.teamApps=document.getElementById('perm-teamapps').checked;
-    m.permissions.fraktionApps=document.getElementById('perm-fraktionapps').checked;
-    m.permissions.news=document.getElementById('perm-news').checked;
-    localStorage.setItem('teamMembers',JSON.stringify(teamMembers));
-    renderPanel(); renderTeam(); closeModal();
-});
-
-// ================== Modal löschen ==================
-document.getElementById('delete-team').addEventListener('click', ()=>{
-    if(editingIndex===null) return;
-    if(teamMembers[editingIndex].name==='Leitung'){
-        alert('Leitung-Account kann nicht gelöscht werden!');
-        return;
-    }
-    if(confirm('Account wirklich löschen?')){
-        teamMembers.splice(editingIndex,1);
-        localStorage.setItem('teamMembers',JSON.stringify(teamMembers));
-        renderPanel(); renderTeam(); closeModal();
-    }
-});
-
-// ================== News ==================
-function renderNews(){
-    const container=document.getElementById('news-list');
-    container.innerHTML='';
-    news.forEach(n=>{
-        container.innerHTML+=`
-        <div style="border:1px solid rgba(255,255,255,0.3);padding:10px;margin:10px 0;">
-            <h3>${n.title}</h3>
-            ${n.img ? `<img src="${n.img}" style="max-width:100%;">` : ''}
-            <p>${n.text}</p>
-        </div>`;
-    });
-}
-
-document.querySelector('.news-form').addEventListener('submit', e=>{
-    e.preventDefault();
-    if(!currentUser || !currentUser.permissions.news){ alert('Keine Berechtigung!'); return; }
-    const title=document.querySelector('.news-title').value;
-    const text=document.querySelector('.news-text').value;
-    const file=document.querySelector('.news-img').files[0];
-    if(file){
-        const reader=new FileReader();
-        reader.onload=ev=>{
-            news.push({title,text,img:ev.target.result});
-            localStorage.setItem('news',JSON.stringify(news));
-            renderNews();
-        };
-        reader.readAsDataURL(file);
-    } else {
-        news.push({title,text,img:null});
-        localStorage.setItem('news',JSON.stringify(news));
-        renderNews();
-    }
-    e.target.reset();
-});
-
-// ================== Bewerbungen & Entbannungen rendern ==================
+// ================== Bewerbungen rendern ==================
 function renderBewerbungen(){
     const tbody=document.querySelector('.bewerbungen-table tbody');
     tbody.innerHTML='';
     bewerbungen.forEach((b,i)=>{
-        const bearbeiten=currentUser.permissions.teamApps || currentUser.role==='Leitung';
+        const canView = (b.art==='Teambewerbung' && currentUser.permissions.teamApps)
+                    || (b.art==='Firmenbewerbung' && currentUser.permissions.fraktionApps)
+                    || currentUser.role==='Leitung';
+        if(!canView) return;
         tbody.innerHTML+=`<tr onclick="openAntrag('bewerbung',${i})" style="cursor:pointer;">
         <td>${b.art}</td><td>${b.minecraft}</td><td>${b.discord}</td><td>${b.bearbeiter?b.bearbeiter:'-'}</td></tr>`;
     });
 }
+
+// ================== Entbannungen rendern ==================
 function renderEntbannungen(){
     const tbody=document.querySelector('.entbannungen-table tbody');
     tbody.innerHTML='';
     entbannungen.forEach((b,i)=>{
-        const bearbeiten=currentUser.permissions.bans || currentUser.role==='Leitung';
+        const canView = currentUser.permissions.bans || currentUser.role==='Leitung';
+        if(!canView) return;
         tbody.innerHTML+=`<tr onclick="openAntrag('entbannung',${i})" style="cursor:pointer;">
         <td>${b.minecraft}</td><td>${b.discord}</td><td>${b.bearbeiter?b.bearbeiter:'-'}</td></tr>`;
     });
@@ -415,6 +358,10 @@ function closeAntragModal(){ currentAntragIndex=null; currentAntragType=null; do
 document.getElementById('save-antrag').addEventListener('click',()=>{
     if(currentAntragIndex===null) return;
     const b = currentAntragType==='bewerbung'?bewerbungen[currentAntragIndex]:entbannungen[currentAntragIndex];
+    const canEdit = (currentAntragType==='bewerbung' && ((b.art==='Teambewerbung' && currentUser.permissions.teamApps) || (b.art==='Firmenbewerbung' && currentUser.permissions.fraktionApps)))
+                    || (currentAntragType==='entbannung' && currentUser.permissions.bans)
+                    || currentUser.role==='Leitung';
+    if(!canEdit){ alert('Keine Berechtigung!'); return; }
     if(b.bearbeiter && b.bearbeiter!==currentUser.name && currentUser.role!=='Leitung'){ alert('Nur der ursprüngliche Bearbeiter oder Leitung darf die Notiz bearbeiten!'); return; }
     b.notiz=document.getElementById('antrag-modal-notiz').value;
     if(!b.bearbeiter) b.bearbeiter=currentUser.name;
@@ -430,6 +377,63 @@ function togglePositionField(){
     document.querySelector('.team-positionen').style.display=val==='Teambewerbung'?'block':'none';
 }
 
+// ================== Modal Team ==================
+function openModal(i){
+    editingIndex=i;
+    const m=teamMembers[i];
+    document.getElementById('modal-name').value=m.name;
+    document.getElementById('modal-role').value=m.role;
+    document.getElementById('modal-pass').value=m.pass;
+    document.getElementById('perm-bans').checked=m.permissions.bans;
+    document.getElementById('perm-teamapps').checked=m.permissions.teamApps;
+    document.getElementById('perm-fraktionapps').checked=m.permissions.fraktionApps;
+    document.getElementById('perm-news').checked=m.permissions.news;
+    document.getElementById('team-modal').style.display='flex';
+}
+function closeModal(){ document.getElementById('team-modal').style.display='none'; }
+
+document.getElementById('save-team').addEventListener('click', ()=>{
+    if(editingIndex===null) return;
+    const m=teamMembers[editingIndex];
+    m.name=document.getElementById('modal-name').value;
+    m.role=document.getElementById('modal-role').value;
+    m.pass=document.getElementById('modal-pass').value;
+    m.permissions.bans=document.getElementById('perm-bans').checked;
+    m.permissions.teamApps=document.getElementById('perm-teamapps').checked;
+    m.permissions.fraktionApps=document.getElementById('perm-fraktionapps').checked;
+    m.permissions.news=document.getElementById('perm-news').checked;
+    localStorage.setItem('teamMembers',JSON.stringify(teamMembers));
+    renderPanel(); renderTeam(); closeModal();
+});
+
+document.getElementById('delete-team').addEventListener('click', ()=>{
+    if(editingIndex===null) return;
+    if(teamMembers[editingIndex].name==='Leitung'){
+        alert('Leitung-Account kann nicht gelöscht werden!');
+        return;
+    }
+    if(confirm('Account wirklich löschen?')){
+        teamMembers.splice(editingIndex,1);
+        localStorage.setItem('teamMembers',JSON.stringify(teamMembers));
+        renderPanel(); renderTeam(); closeModal();
+    }
+});
+
+// ================== News ==================
+function renderNews(){
+    const container=document.getElementById('news-list');
+    container.innerHTML='';
+    news.forEach(n=>{
+        container.innerHTML+=`
+        <div style="border:1px solid rgba(255,255,255,0.3);padding:10px;margin:10px 0;">
+            <h3>${n.title}</h3>
+            ${n.img ? `<img src="${n.img}" style="max-width:100%;">` : ''}
+            <p>${n.text}</p>
+        </div>`;
+    });
+}
+
+// ================== Initial render ==================
 renderTeam();
 renderPanel();
 renderNews();
