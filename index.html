@@ -251,113 +251,91 @@ if(!teamMembers.find(m => m.name === 'Leitung')){
 
 // ----------------- NAVIGATION -----------------
 function showSection(id){
-    document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
-    window.location.hash = id;
-}
-if(window.location.hash) showSection(window.location.hash.substring(1));
-
-// ----------------- RENDER -----------------
-function renderTeam(){
-    const tbody = document.querySelector('.team-table tbody');
-    tbody.innerHTML = '';
-    teamMembers.forEach(m => {
-        tbody.innerHTML += `<tr><td><img src="${m.avatar}" class="avatar"></td><td>${m.name}</td><td>${m.role}</td></tr>`;
-    });
 }
 
-// Bewerbungen und Entbannungen nach Berechtigungen filtern
-function renderPanel() {
+// ----------------- PANEL RENDER -----------------
+function renderPanel(){
     const tbodyT = document.querySelector('.team-accounts-table tbody');
     tbodyT.innerHTML = '';
-    teamMembers.forEach((m, i) => {
+    teamMembers.forEach((m,i)=>{
         tbodyT.innerHTML += `<tr>
+            <td><img src="${m.avatar}" class="avatar"></td>
             <td>${m.name}</td>
             <td>${m.role}</td>
-            <td><img src="${m.avatar}" class="avatar"></td>
-            <td><button class="action-btn" onclick="editPermissions(${i})">Verwalten</button></td>
-            <td>${canDelete(m) ? '<button class="action-btn" onclick="deleteMember(' + i + ')">Löschen</button>' : ''}</td>
+            <td><button class="action-btn" onclick="editPermissions(${i})"${m.name==='Leitung'?' disabled':''}>Verwalten</button></td>
+            <td>${m.name==='Leitung' ? '' : '<button class="action-btn" onclick="deleteMember('+i+')">Löschen</button>'}</td>
         </tr>`;
     });
 
+    // Bewerbungen filtern
     const tbodyB = document.querySelector('.panel-bewerbungen tbody');
     tbodyB.innerHTML = '';
-    bewerbungen.forEach((b) => {
-        if (currentUser.name === 'Leitung' ||
-            (b.art === 'Teambewerbung' && currentUser.permissions.teamApps) ||
-            (b.art === 'Fraktionsbewerbung' && currentUser.permissions.fraktionApps)) {
+    bewerbungen.forEach((b)=>{
+        if(currentUser.name==='Leitung' || 
+           (b.art==='Teambewerbung' && currentUser.permissions.teamApps) || 
+           (b.art==='Fraktionsbewerbung' && currentUser.permissions.fraktionApps)){
             tbodyB.innerHTML += `<tr>
-                <td>${b.datum}</td>
-                <td>${b.art}</td>
-                <td>${b.discord}</td>
-                <td>${b.minecraft}</td>
-                <td>${b.email}</td>
-                <td>${b.position || '-'}</td>
-                <td>${b.text}</td>
-                <td>${b.notiz || '-'}</td>
-                <td>${b.status || 'offen'}</td>
-                <td>${b.bearbeiter || '-'}</td>
-                <td></td>
+                <td>${b.datum}</td><td>${b.art}</td><td>${b.discord}</td><td>${b.minecraft}</td>
+                <td>${b.email}</td><td>${b.position||'-'}</td><td>${b.text}</td>
+                <td>${b.notiz||'-'}</td><td>${b.status||'offen'}</td><td>${b.bearbeiter||'-'}</td><td></td>
             </tr>`;
         }
     });
 
+    // Entbannungen filtern
     const tbodyE = document.querySelector('.panel-entbannungen tbody');
     tbodyE.innerHTML = '';
-    entbannungen.forEach((e) => {
-        if (currentUser.name === 'Leitung' || currentUser.permissions.bans) {
+    entbannungen.forEach((e)=>{
+        if(currentUser.name==='Leitung' || currentUser.permissions.bans){
             tbodyE.innerHTML += `<tr>
-                <td>${e.datum}</td>
-                <td>${e.minecraft}</td>
-                <td>${e.discord}</td>
-                <td>${e.email}</td>
-                <td>${e.discordban ? 'Ja' : 'Nein'}</td>
-                <td>${e.text}</td>
-                <td>${e.notiz || '-'}</td>
-                <td>${e.status || 'offen'}</td>
-                <td>${e.bearbeiter || '-'}</td>
-                <td></td>
+                <td>${e.datum}</td><td>${e.minecraft}</td><td>${e.discord}</td>
+                <td>${e.email}</td><td>${e.discordban?'Ja':'Nein'}</td>
+                <td>${e.text}</td><td>${e.notiz||'-'}</td><td>${e.status||'offen'}</td>
+                <td>${e.bearbeiter||'-'}</td><td></td>
             </tr>`;
         }
     });
 }
 
-function canDelete(member) {
-    return currentUser.name === 'Leitung' || (currentUser.permissions.deleteTeam && member.name !== 'Leitung');
+// ----------------- HELPER -----------------
+function saveData(){
+    localStorage.setItem('teamMembers', JSON.stringify(teamMembers));
+    localStorage.setItem('bewerbungen', JSON.stringify(bewerbungen));
+    localStorage.setItem('entbannungen', JSON.stringify(entbannungen));
 }
 
-function editPermissions(i) {
-    const m = teamMembers[i];
-    if (m.name === 'Leitung') { 
-        alert('Leitung-Account kann nicht bearbeitet werden.'); 
-        return; 
-    }
-    if (!currentUser.permissions.teamAccounts) { 
-        alert('Keine Berechtigung!'); 
-        return; 
-    }
-    m.permissions.teamAccounts = confirm('Team Accounts verwalten?');
-    m.permissions.teamApps = confirm('Teambewerbungen einsehen?');
-    m.permissions.fraktionApps = confirm('Fraktionsbewerbungen einsehen?');
-    m.permissions.bans = confirm('Entbannungsanträge einsehen?');
-    m.permissions.deleteTeam = confirm('Team löschen erlaubt?');
-    alert('Berechtigungen geändert!');
-    saveData();
-}
-
-function deleteMember(i){
-    if(canDelete(teamMembers[i]) && confirm(`Willst du ${teamMembers[i].name} wirklich löschen?`)){
-        teamMembers.splice(i,1);
-        saveData();
+// ----------------- EVENTS -----------------
+document.querySelector('.login-form').addEventListener('submit', e=>{
+    e.preventDefault();
+    const user = document.querySelector('.login-user').value;
+    const pass = document.querySelector('.login-pass').value;
+    const acc = teamMembers.find(t=>t.name===user && t.pass===pass);
+    if(acc){
+        currentUser = acc;
+        alert('Erfolgreich eingeloggt!');
+        document.querySelector('.panel-content').style.display='block';
         renderPanel();
-    } else {
-        alert('Keine Berechtigung, diesen Account zu löschen!');
+    }else{
+        alert('Benutzername oder Passwort falsch!');
     }
-}
+});
 
-// ----------------- INIT -----------------
-saveData();
-renderTeam();
+document.querySelector('.team-create-form').addEventListener('submit', e=>{
+    e.preventDefault();
+    const name = document.querySelector('.team-name').value;
+    const role = document.querySelector('.team-role').value;
+    const pass = document.querySelector('.team-pass').value;
+    const avatarInput = document.querySelector('.team-avatar');
+    let avatar = 'sunriserp.png';
+    if(avatarInput.files[0]){
+        avatar = URL.createObjectURL(avatarInput.files[0]);
+    }
+    teamMembers.push(createTeamMember(name, role, pass, avatar));
+    saveData();
+    renderPanel();
+});
 </script>
 </body>
 </html>
