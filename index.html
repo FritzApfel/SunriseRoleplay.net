@@ -43,19 +43,16 @@ button.action-btn:hover { background: #ffd480; }
     <button onclick="showSection('panel')">Admin Panel</button>
 </nav>
 
-<!-- Regelwerk -->
 <section id="regelwerk" class="active">
 <h2>Regelwerk SunriseRP</h2>
 <pre style="white-space: pre-wrap; font-family: inherit;">Dein Regelwerk</pre>
 </section>
 
-<!-- News -->
 <section id="news">
 <h2>News</h2>
 <div id="news-list"></div>
 </section>
 
-<!-- Team -->
 <section id="team">
 <h2>Teammitglieder</h2>
 <table class="team-table">
@@ -64,7 +61,6 @@ button.action-btn:hover { background: #ffd480; }
 </table>
 </section>
 
-<!-- Bewerbung -->
 <section id="bewerbung">
 <h2>Bewerbung einreichen</h2>
 <form class="bewerbung-form">
@@ -89,7 +85,6 @@ button.action-btn:hover { background: #ffd480; }
 </form>
 </section>
 
-<!-- Entbannung -->
 <section id="entbannung">
 <h2>Entbannungsantrag</h2>
 <form class="entbannung-form">
@@ -102,7 +97,6 @@ button.action-btn:hover { background: #ffd480; }
 </form>
 </section>
 
-<!-- Admin Panel -->
 <section id="panel">
 <h2>Admin Panel</h2>
 <form class="login-form">
@@ -119,6 +113,12 @@ button.action-btn:hover { background: #ffd480; }
 <textarea class="news-text" placeholder="Text" required></textarea>
 <button type="submit">News erstellen</button>
 </form>
+
+<h3>Bewerbungen verwalten</h3>
+<table class="bewerbungen-table">
+<thead><tr><th>Datum</th><th>Name</th><th>Art</th><th>Position</th><th>Status</th><th>Notiz</th><th>Bearbeiter</th></tr></thead>
+<tbody></tbody>
+</table>
 
 <h3>Teamverwaltung</h3>
 <form class="team-create-form">
@@ -137,7 +137,6 @@ button.action-btn:hover { background: #ffd480; }
 </div>
 </section>
 
-<!-- Modal für Team Bearbeiten -->
 <div class="modal" id="team-modal">
 <div class="modal-content">
 <span class="close-modal" onclick="closeModal()">×</span>
@@ -213,8 +212,14 @@ document.querySelector('.login-form').addEventListener('submit', e=>{
     const user=document.querySelector('.login-user').value;
     const pass=document.querySelector('.login-pass').value;
     const u=teamMembers.find(m=>m.name===user && m.pass===pass);
-    if(u){currentUser=u; alert('Erfolgreich eingeloggt!'); document.querySelector('.panel-content').style.display='block'; renderPanel(); renderNews();} 
-    else alert('Falscher Benutzername oder Passwort!');
+    if(u){ 
+        currentUser=u; 
+        alert('Erfolgreich eingeloggt!'); 
+        document.querySelector('.panel-content').style.display='block'; 
+        renderPanel(); 
+        renderNews(); 
+        renderBewerbungen();
+    } else alert('Falscher Benutzername oder Passwort!');
 });
 
 // ================== Team erstellen ==================
@@ -266,6 +271,7 @@ function renderTeam(){
 
 // ================== Modal ==================
 function openModal(i){
+    if(!currentUser.permissions.teamAccounts && currentUser.role!=='Leitung'){ alert('Keine Berechtigung!'); return; }
     editingIndex=i;
     const m=teamMembers[i];
     document.getElementById('modal-name').value=m.name;
@@ -297,10 +303,7 @@ document.getElementById('save-team').addEventListener('click', ()=>{
 // ================== Modal löschen ==================
 document.getElementById('delete-team').addEventListener('click', ()=>{
     if(editingIndex===null) return;
-    if(teamMembers[editingIndex].name==='Leitung'){
-        alert('Leitung-Account kann nicht gelöscht werden!');
-        return;
-    }
+    if(teamMembers[editingIndex].name==='Leitung'){ alert('Leitung-Account kann nicht gelöscht werden!'); return; }
     if(confirm('Account wirklich löschen?')){
         teamMembers.splice(editingIndex,1);
         localStorage.setItem('teamMembers',JSON.stringify(teamMembers));
@@ -343,6 +346,26 @@ document.querySelector('.news-form').addEventListener('submit', e=>{
     }
     e.target.reset();
 });
+
+// ================== Bewerbungen rendern ==================
+function renderBewerbungen(){
+    const tbody=document.querySelector('.bewerbungen-table tbody');
+    tbody.innerHTML='';
+    if(!currentUser) return;
+    bewerbungen.forEach(b=>{
+        // Berechtigungen prüfen
+        if((b.art==='Teambewerbung' && !currentUser.permissions.teamApps) || (b.art==='Firmenbewerbung' && !currentUser.permissions.fraktionApps)) return;
+        tbody.innerHTML+=`<tr>
+            <td>${b.datum}</td>
+            <td>${b.minecraft}</td>
+            <td>${b.art}</td>
+            <td>${b.position || '-'}</td>
+            <td>${b.status}</td>
+            <td>${b.notiz}</td>
+            <td>${b.bearbeiter}</td>
+        </tr>`;
+    });
+}
 
 // ================== Teambewerbung Feld ==================
 function togglePositionField(){
