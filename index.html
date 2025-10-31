@@ -85,38 +85,6 @@ button.action-btn { background: #ffbb55; color: #000; border-radius: 4px; paddin
 button.action-btn:hover { background: #ffd480; }
 .status-select { padding:4px; border-radius:4px; }
 .notiz-input { width:90%; padding:4px; border-radius:4px; }
-
-/* Modal Styles */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 100;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0,0,0,0.7);
-}
-.modal-content {
-    background-color: rgba(0,0,0,0.9);
-    margin: 15% auto;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 400px;
-    border-radius: 10px;
-    color: #fff;
-}
-.modal-content h3 { text-align:center; }
-.modal-content label { display:block; margin:10px 0; }
-.modal-content button { margin-top: 15px; }
-.close-modal {
-    color: #ffbb55;
-    float: right;
-    font-size: 24px;
-    cursor: pointer;
-}
-.close-modal:hover { color: #ffd480; }
 </style>
 </head>
 <body>
@@ -251,92 +219,172 @@ LG Fabian (;
 </div>
 </section>
 
-<!-- Modal -->
-<div id="permissionsModal" class="modal">
-<div class="modal-content">
-<span class="close-modal" onclick="closeModal()">&times;</span>
-<h3>Team-Account Berechtigungen bearbeiten</h3>
-<label><input type="checkbox" id="permTeamAccounts"> Team-Accounts bearbeiten</label>
-<label><input type="checkbox" id="permFraktionApps"> Fraktion-Bewerbungen bearbeiten</label>
-<label><input type="checkbox" id="permTeamApps"> Team-Bewerbungen bearbeiten</label>
-<label><input type="checkbox" id="permBans"> Entbannungsanträge bearbeiten</label>
-<button id="deleteAccountBtn" style="background:red; color:white;">Account löschen</button>
-<button onclick="savePermissions()" style="margin-left:10px;">Speichern</button>
-</div>
-</div>
-
 <script>
-function showSection(sectionId) {
+// Daten und lokale Speicherung
+let teamMembers = JSON.parse(localStorage.getItem('teamMembers')) || [];
+let bewerbungen = JSON.parse(localStorage.getItem('bewerbungen')) || [];
+let entbannungen = JSON.parse(localStorage.getItem('entbannungen')) || [];
+let currentUser = null;
+
+const createTeamMember = (name, role, pass, avatar='sunriserp.png', permissions={teamAccounts:true, teamApps:true, fraktionApps:true, bans:true}) => ({name, role, pass, avatar, permissions});
+const createBewerbung = (art, discord, minecraft, email, position, text) => ({ datum: new Date().toLocaleString(), art, discord, minecraft, email, position, text, notiz:'', status:'offen', bearbeiter:'' });
+const createEntbannung = (minecraft, discord, email, discordban, text) => ({ datum: new Date().toLocaleString(), minecraft, discord, email, discordban, text, notiz:'', status:'offen', bearbeiter:'' });
+
+// Standard-Leitung erstellen, falls nicht vorhanden
+if(!teamMembers.find(m => m.name === 'Leitung')){
+    teamMembers.unshift(createTeamMember('Leitung','Leitung','L3!t@d#SunR1$e2025'));
+    saveData();
+}
+
+function showSection(id){
     document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
-    document.getElementById(sectionId).classList.add('active');
+    document.getElementById(id).classList.add('active');
+    window.location.hash = id;
+}
+if(window.location.hash) showSection(window.location.hash.substring(1));
+
+function renderTeam(){
+    const tbody = document.querySelector('.team-table tbody');
+    tbody.innerHTML = '';
+    teamMembers.forEach(m => {
+        tbody.innerHTML += `<tr><td><img src="${m.avatar}" class="avatar"></td><td>${m.name}</td><td>${m.role}</td></tr>`;
+    });
 }
 
-function togglePositionField() {
+function renderPanel() {
+    const tbodyT = document.querySelector('.team-accounts-table tbody');
+    tbodyT.innerHTML = '';
+    teamMembers.forEach((m, i) => {
+        tbodyT.innerHTML += `<tr>
+            <td>${m.name}</td>
+            <td>${m.role}</td>
+            <td><img src="${m.avatar}" class="avatar"></td>
+            <td>${m.name === 'Leitung' ? '' : '<button class="action-btn" onclick="editTeam('+i+')">Bearbeiten</button>'}</td>
+            <td>${m.name === 'Leitung' ? '' : '<button class="action-btn" onclick="deleteTeam('+i+')">Löschen</button>'}</td>
+        </tr>`;
+    });
+
+    const tbodyB = document.querySelector('.panel-bewerbungen tbody');
+    tbodyB.innerHTML = '';
+    bewerbungen.forEach((b,i) => {
+        tbodyB.innerHTML += `<tr>
+        <td>${b.datum}</td><td>${b.art}</td><td>${b.discord}</td><td>${b.minecraft}</td><td>${b.email}</td><td>${b.position||''}</td><td>${b.text}</td>
+        <td><input class="notiz-input" value="${b.notiz}" onchange="updateBewerbungNotiz(${i}, this.value)"></td>
+        <td><select class="status-select" onchange="updateBewerbungStatus(${i}, this.value)">
+            <option value="offen"${b.status==='offen'?' selected':''}>offen</option>
+            <option value="angenommen"${b.status==='angenommen'?' selected':''}>angenommen</option>
+            <option value="abgelehnt"${b.status==='abgelehnt'?' selected':''}>abgelehnt</option>
+        </select></td>
+        <td>${b.bearbeiter}</td>
+        <td></td>
+        </tr>`;
+    });
+
+    const tbodyE = document.querySelector('.panel-entbannungen tbody');
+    tbodyE.innerHTML = '';
+    entbannungen.forEach((b,i) => {
+        tbodyE.innerHTML += `<tr>
+        <td>${b.datum}</td><td>${b.minecraft}</td><td>${b.discord}</td><td>${b.email}</td><td>${b.discordban?'Ja':'Nein'}</td><td>${b.text}</td>
+        <td><input class="notiz-input" value="${b.notiz}" onchange="updateEntbannungNotiz(${i}, this.value)"></td>
+        <td><select class="status-select" onchange="updateEntbannungStatus(${i}, this.value)">
+            <option value="offen"${b.status==='offen'?' selected':''}>offen</option>
+            <option value="angenommen"${b.status==='angenommen'?' selected':''}>angenommen</option>
+            <option value="abgelehnt"${b.status==='abgelehnt'?' selected':''}>abgelehnt</option>
+        </select></td>
+        <td>${b.bearbeiter}</td>
+        <td></td>
+        </tr>`;
+    });
+}
+
+function saveData(){
+    localStorage.setItem('teamMembers', JSON.stringify(teamMembers));
+    localStorage.setItem('bewerbungen', JSON.stringify(bewerbungen));
+    localStorage.setItem('entbannungen', JSON.stringify(entbannungen));
+}
+
+// Bewerbungsformular
+document.querySelector('.bewerbung-form').addEventListener('submit', e=>{
+    e.preventDefault();
     const art = document.querySelector('.bewerbungs-art').value;
-    document.querySelector('.team-positionen').style.display = art === 'Teambewerbung' ? 'block' : 'none';
-}
-
-// Modal
-let currentAccountRow = null;
-function openModal(row) {
-    currentAccountRow = row;
-    const perms = {
-        permTeamAccounts: row.dataset.permTeamAccounts === 'true',
-        permFraktionApps: row.dataset.permFraktionApps === 'true',
-        permTeamApps: row.dataset.permTeamApps === 'true',
-        permBans: row.dataset.permBans === 'true'
-    };
-    document.getElementById('permTeamAccounts').checked = perms.permTeamAccounts;
-    document.getElementById('permFraktionApps').checked = perms.permFraktionApps;
-    document.getElementById('permTeamApps').checked = perms.permTeamApps;
-    document.getElementById('permBans').checked = perms.permBans;
-    document.getElementById('permissionsModal').style.display = 'block';
-}
-
-function closeModal() {
-    document.getElementById('permissionsModal').style.display = 'none';
-}
-
-function savePermissions() {
-    if(!currentAccountRow) return;
-    currentAccountRow.dataset.permTeamAccounts = document.getElementById('permTeamAccounts').checked;
-    currentAccountRow.dataset.permFraktionApps = document.getElementById('permFraktionApps').checked;
-    currentAccountRow.dataset.permTeamApps = document.getElementById('permTeamApps').checked;
-    currentAccountRow.dataset.permBans = document.getElementById('permBans').checked;
-    closeModal();
-}
-
-// Delete
-document.getElementById('deleteAccountBtn').onclick = function() {
-    if(currentAccountRow) {
-        if(confirm("Willst du diesen Account wirklich löschen?")) {
-            currentAccountRow.remove();
-            closeModal();
-        }
-    }
-};
-
-// Beispiel: Teamaccounts Tabelle dynamisch füllen
-const teamTableBody = document.querySelector('.team-accounts-table tbody');
-const exampleAccounts = [
-    {name:'Fabian', role:'Admin', avatar:'sunriserp.png', permTeamAccounts:true, permFraktionApps:true, permTeamApps:true, permBans:true},
-    {name:'Max', role:'Supporter', avatar:'sunriserp.png', permTeamAccounts:false, permFraktionApps:true, permTeamApps:false, permBans:true}
-];
-exampleAccounts.forEach(acc => {
-    const tr = document.createElement('tr');
-    tr.dataset.permTeamAccounts = acc.permTeamAccounts;
-    tr.dataset.permFraktionApps = acc.permFraktionApps;
-    tr.dataset.permTeamApps = acc.permTeamApps;
-    tr.dataset.permBans = acc.permBans;
-    tr.innerHTML = `
-        <td>${acc.name}</td>
-        <td>${acc.role}</td>
-        <td><img src="${acc.avatar}" class="avatar"></td>
-        <td><button class="action-btn" onclick="openModal(this.parentElement.parentElement)">Bearbeiten</button></td>
-        <td><button class="action-btn" style="background:red;" onclick="if(confirm('Willst du diesen Account wirklich löschen?')) this.parentElement.parentElement.remove();">Löschen</button></td>
-    `;
-    teamTableBody.appendChild(tr);
+    const discord = document.querySelector('.bewerbung-discord').value;
+    const minecraft = document.querySelector('.bewerbung-minecraft').value;
+    const email = document.querySelector('.bewerbung-email').value;
+    const position = document.querySelector('.bewerbung-position')?.value || '';
+    const text = document.querySelector('.bewerbung-text').value;
+    bewerbungen.push(createBewerbung(art, discord, minecraft, email, position, text));
+    saveData();
+    alert('Bewerbung erfolgreich abgesendet!');
+    document.querySelector('.bewerbung-form').reset();
 });
+
+// Entbannungsformular
+document.querySelector('.entbannung-form').addEventListener('submit', e=>{
+    e.preventDefault();
+    const minecraft = document.querySelector('.entbannung-minecraft').value;
+    const discord = document.querySelector('.entbannung-discord').value;
+    const email = document.querySelector('.entbannung-email').value;
+    const discordban = document.querySelector('.entbannung-discordban').checked;
+    const text = document.querySelector('.entbannung-text').value;
+    entbannungen.push(createEntbannung(minecraft, discord, email, discordban, text));
+    saveData();
+    alert('Entbannungsantrag erfolgreich abgesendet!');
+    document.querySelector('.entbannung-form').reset();
+});
+
+// Admin Login
+document.querySelector('.login-form').addEventListener('submit', e=>{
+    e.preventDefault();
+    const user = document.querySelector('.login-user').value;
+    const pass = document.querySelector('.login-pass').value;
+    const acc = teamMembers.find(m => m.name === user && m.pass === pass);
+    if(acc){
+        currentUser = acc;
+        document.querySelector('.login-form').style.display='none';
+        document.querySelector('.panel-content').style.display='block';
+        renderPanel();
+    } else alert('Falscher Benutzername oder Passwort!');
+});
+
+// Teamaccount erstellen
+document.querySelector('.team-create-form').addEventListener('submit', e=>{
+    e.preventDefault();
+    const name = document.querySelector('.team-name').value;
+    const role = document.querySelector('.team-role').value;
+    const pass = document.querySelector('.team-pass').value;
+    const avatar = document.querySelector('.team-avatar').files[0] ? URL.createObjectURL(document.querySelector('.team-avatar').files[0]) : 'sunriserp.png';
+    teamMembers.push(createTeamMember(name, role, pass, avatar));
+    saveData();
+    renderPanel();
+    alert('Teamaccount erstellt!');
+    e.target.reset();
+});
+
+// Notiz/Status aktualisieren
+function updateBewerbungNotiz(i,val){bewerbungen[i].notiz=val;bewerbungen[i].bearbeiter=currentUser.name;saveData();}
+function updateBewerbungStatus(i,val){bewerbungen[i].status=val;bewerbungen[i].bearbeiter=currentUser.name;saveData();}
+function updateEntbannungNotiz(i,val){entbannungen[i].notiz=val;entbannungen[i].bearbeiter=currentUser.name;saveData();}
+function updateEntbannungStatus(i,val){entbannungen[i].status=val;entbannungen[i].bearbeiter=currentUser.name;saveData();}
+
+// Team bearbeiten/löschen
+function editTeam(i){const m=teamMembers[i];const name=prompt('Name',m.name);const role=prompt('Rolle',m.role);if(name && role){m.name=name;m.role=role;saveData();renderPanel();}}
+function deleteTeam(i){if(confirm('Teammitglied wirklich löschen?')){teamMembers.splice(i,1);saveData();renderPanel();}}
+
+// Avatar Vorschau
+document.querySelector('.team-avatar').addEventListener('change', e=>{
+    if(e.target.files[0]) document.getElementById('avatar-preview').src = URL.createObjectURL(e.target.files[0]);
+});
+
+function togglePositionField(){
+    const art = document.querySelector('.bewerbungs-art').value;
+    document.querySelector('.team-positionen').style.display = (art==='Teambewerbung')?'block':'none';
+}
+
+// Änderungen speichern Button
+document.querySelector('.save-btn').addEventListener('click', ()=>{saveData();alert('Alle Änderungen gespeichert!');});
+
+// Initial Render
+renderTeam();
 </script>
 </body>
 </html>
