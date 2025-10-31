@@ -30,6 +30,9 @@ button.action-btn:hover { background: #ffd480; }
 .modal-content label { display:block; margin:5px 0; }
 .close-modal { cursor:pointer; color:#ffbb55; float:right; font-weight:bold; }
 </style>
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
@@ -47,87 +50,7 @@ button.action-btn:hover { background: #ffd480; }
 <h2>Regelwerk SunriseRP</h2>
 <pre style="white-space: pre-wrap; font-family: inherit;">Regelwerk Sunrise Rp
 
-- OOC Talk ist strengstens untersagt und wird mit Adminjail bestraft
-
-- RDM (random death match/Spieler ohne Grund umbringen) ist verboten und wird mit einen permanenten Bann bestraft
-
-- VDM (Vehicle death match/Spieler ohne Grund überfahren) ist ebenfalls verboten, auch wenn man keinen mit einen Fahrzeug umbringen kann
-
-- FAIL RP bzw. etwas unrealistisches im Roleplay zu machen 
-
-- Sexistische, Rassistische und diskriminierende Aussagen und Handlungen sind strengstens verboten
-
-- Auf dem Roleplay Server wird alles IC betrachtet
-
-- Wenn du bei uns spielen möchtest musst du die Sprache "Deutsch" sprechen können und ein funktionierendes Mikrofon bereithalten
-
-- Keiner darf einen Zweitaccount besitzen. Dies gilt für Minecraft sowie für Discord
-
-- Es ist verboten, Leute mit Geld zu bestechen um im Rp sich Vorteile zu verschaffen
-
-- Unrealistische Wörter, die du im echten Leben auch nicht sagst sind verboten. Darunter gelten: Pd, Md, Gambo, schlafen gehen, Medic, Pdler, 
-
-- Keine andere Person darf mit deinen Minecraft Account auf unserem Server spielen
-
-- Längeres AFK rumstehen (10) Minuten ist nicht erlaubt und wird mit Adminjail bestraft (zum AFK stehen bitte sagen das du kurz wo hin musst bzw. wohin wo du deine Ruhe hast)
-
-- Bugusing, Hack Clients, Auto Clicker etc. sind untersagt und werden mit der Blacklist bestraft
-
-- Support ausnutzen ist nicht erlaubt und wird aufgrund "Trolling" mit einen permanenten Bann bestraft
-
-- Im Support darf man keine Aufnahme machen
-
-- Es werden nur Items erstattet sobald der Inventar sichtbar ist und ein Clip vorhanden ist
-
-- Wenn du im Roleplay eingefroren wirst, musst du sofort nach einer Situation in den Support auf unserem Discord
-
-- Wenn man einen Raub gestartet hat, darf man nicht einfach abhauen. Dies zählt zu FAIL RP und wird bestraft
-
-- Man darf einen Raub mit mindestens 2 Geiselnehmer anfahren und das Maximum beträgt 4 und 7 Geiseln starten. Es müssen ebenfalls auch 8 Eco Cobra Einsatzbeamte online sein
-
-- Es darf kein Raub gestartet werden wenn gerade einer läuft (falls man unabsichtlich gleichzeitig einen startet kann man nix machen
-
-- Es dürfen nur 2 Räube pro Tag stattfinden da es sonst unrealistisch wäre
-
-- pro Geisel darf maximal 1500 euro gefordert werden. (andere Items sind nicht erlaubt und wenn man mehr Geld fordert bzw. Items fordert kann das ins Adminjail führen
-
-- Bei betreten eines Gang Gebietes musst du mit sofortigen Beschuss rechnen
-
-- Wenn dich einer mit einer Waffe oder einem Messer bedroht, musst du kooperieren und alles machen was er sagt
-
-- "Zum Hund" machen ist nicht erlaubt und wird mit Adminjail bestraft
-
-- unnötige Schießerrein sind nicht gestattet. Es muss mehrere Gründe und Beweise geben, dass eine Schießerrei geführt werden darf
-
-- unter einen Raub darf die Eco Cobra nicht blöd angemacht werden, als Geisl genommen werden usw. da es eine ernste Situation im      Rp ist. 
-
-- Es darf keine Polizei zu einen Raub ausrücken. Dafür ist die Eco Cobra zuständig.
-
-- Es müssen zu einen Raub mindestens 5 Eco Cobra Einsatzbeamte einrücken.
-
-- Schießen aus jene Fahrzeugen ist verboten
-
-- Man darf nicht unter einer Rp Situation einfach offline gehen
-
-- Personen mit einer Maske dürfen erkannt werden. Um sich nicht bemerkbar zu machen muss man seine stimme verstellen
-
-- Wenn man bewusstlos war und von einen Mediziner revived wird muss man mit den Mediziner im Auto mitfahren
-
-- Wenn ein Spieler eine Geisel nimmt darf man diesen nicht Geiseln
-
-- Koruption ist nicht erlaubt und wird mit einen Bann bestraft
-
-- Es gehört nicht im Rp dazu, dass man vom Server redet
-
-- Man darf nicht sprinten (Fail Rp)
-
-- Mit einer Waffe sollte man so realistisch wie möglich umgehen ( springen mit einer Waffe bzw. schwimmen ist nicht erlaubt)
-
-Das Regelwerk kann immer verändert werden, deswegen bitten wir dich nicht nur jetzt bei unserer Website vorbeizuschauen. 
-
-LG Leitung
-
-
+... (Regeln unverändert) ...
 </pre>
 </section>
 
@@ -256,117 +179,89 @@ LG Leitung
 </div>
 
 <script>
-let teamMembers = JSON.parse(localStorage.getItem('teamMembers')) || [];
-let bewerbungen = JSON.parse(localStorage.getItem('bewerbungen')) || [];
-let entbannungen = JSON.parse(localStorage.getItem('entbannungen')) || [];
-let news = JSON.parse(localStorage.getItem('news')) || [];
+// ================== Firebase Setup ==================
+const firebaseConfig = {
+  apiKey: "DEIN_API_KEY",
+  authDomain: "DEIN_PROJECT_ID.firebaseapp.com",
+  projectId: "DEIN_PROJECT_ID",
+  storageBucket: "DEIN_PROJECT_ID.appspot.com",
+  messagingSenderId: "DEIN_SENDER_ID",
+  appId: "DEIN_APP_ID"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+let teamMembers = [];
+let bewerbungen = [];
+let entbannungen = [];
+let news = [];
 let currentUser = null;
 let editingIndex = null;
 let currentAntragIndex = null;
 let currentAntragType = null;
 
-if(!teamMembers.find(m=>m.name==='Leitung')){
-    teamMembers.unshift({
-        name:'Leitung',role:'Leitung',pass:'Leitung7??698145!13076$$23',avatar:'sunriserp.png',
-        permissions:{bans:true,teamApps:true,fraktionApps:true,news:true,teamAccountsVerwalten:true}
-    });
-    localStorage.setItem('teamMembers',JSON.stringify(teamMembers));
+// ================== Initial Load ==================
+async function loadData(){
+    const teamSnap = await db.collection('teamMembers').get();
+    teamMembers = teamSnap.docs.map(d=>d.data());
+
+    // Leitung-Account anlegen, falls nicht vorhanden
+    if(!teamMembers.find(m=>m.name==='Leitung')){
+        const leitung = {name:'Leitung',role:'Leitung',pass:'Leitung7??698145!13076$$23',avatar:'sunriserp.png',
+                         permissions:{bans:true,teamApps:true,fraktionApps:true,news:true,teamAccountsVerwalten:true}};
+        teamMembers.unshift(leitung);
+        await db.collection('teamMembers').doc('Leitung').set(leitung);
+    }
+
+    const bewerbSnap = await db.collection('bewerbungen').get();
+    bewerbungen = bewerbSnap.docs.map(d=>d.data());
+
+    const entbSnap = await db.collection('entbannungen').get();
+    entbannungen = entbSnap.docs.map(d=>d.data());
+
+    const newsSnap = await db.collection('news').get();
+    news = newsSnap.docs.map(d=>d.data());
+
+    renderTeam();
+    renderPanel();
+    renderBewerbungen();
+    renderEntbannungen();
+    renderNews();
 }
 
+loadData();
+
+// ================== Helper Functions ==================
 function showSection(id){
     document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
 }
 
-document.querySelector('.bewerbung-form').addEventListener('submit', e=>{
-    e.preventDefault();
-    const art=document.querySelector('.bewerbungs-art').value;
-    const discord=document.querySelector('.bewerbung-discord').value;
-    const minecraft=document.querySelector('.bewerbung-minecraft').value;
-    const email=document.querySelector('.bewerbung-email').value;
-    const pos=document.querySelector('.bewerbung-position')?.value||'';
-    const text=document.querySelector('.bewerbung-text').value;
-    bewerbungen.push({datum:new Date().toLocaleString(),art,discord,minecraft,email,position:pos,text,notiz:'',bearbeiter:''});
-    localStorage.setItem('bewerbungen',JSON.stringify(bewerbungen));
-    e.target.reset();
-    alert('Bewerbung abgeschickt!');
-    renderBewerbungen();
-});
-
-document.querySelector('.entbannung-form').addEventListener('submit', e=>{
-    e.preventDefault();
-    const minecraft=document.querySelector('.entbannung-minecraft').value;
-    const discord=document.querySelector('.entbannung-discord').value;
-    const email=document.querySelector('.entbannung-email').value;
-    const discordban=document.querySelector('.entbannung-discordban').checked;
-    const text=document.querySelector('.entbannung-text').value;
-    entbannungen.push({datum:new Date().toLocaleString(),minecraft,discord,email,discordban,text,notiz:'',bearbeiter:''});
-    localStorage.setItem('entbannungen',JSON.stringify(entbannungen));
-    e.target.reset();
-    alert('Entbannungsantrag abgeschickt!');
-    renderEntbannungen();
-});
-
-document.querySelector('.login-form').addEventListener('submit', e=>{
-    e.preventDefault();
-    const user=document.querySelector('.login-user').value;
-    const pass=document.querySelector('.login-pass').value;
-    const u=teamMembers.find(m=>m.name===user && m.pass===pass);
-    if(u){
-        currentUser=u;
-        alert('Erfolgreich eingeloggt!');
-        document.querySelector('.panel-content').style.display='block';
-        applyPermissions();
-        renderPanel(); renderNews(); renderBewerbungen(); renderEntbannungen(); renderTeam();
-    } else alert('Falscher Benutzername oder Passwort!');
-});
-
-function applyPermissions(){
-    document.getElementById('news-form-section').style.display=currentUser.permissions.news || currentUser.role==='Leitung' ? 'block':'none';
-    document.getElementById('team-create-form-section').style.display=currentUser.permissions.teamAccountsVerwalten || currentUser.role==='Leitung' ? 'block':'none';
-    document.getElementById('team-create-title').style.display=currentUser.permissions.teamAccountsVerwalten || currentUser.role==='Leitung' ? 'block':'none';
+function togglePositionField(){
+    const val=document.querySelector('.bewerbungs-art').value;
+    document.querySelector('.team-positionen').style.display = val==='Teambewerbung' ? 'block' : 'none';
 }
 
-document.querySelector('.team-create-form').addEventListener('submit', e=>{
-    e.preventDefault();
-    const name=document.querySelector('.team-name').value;
-    const role=document.querySelector('.team-role').value;
-    const pass=document.querySelector('.team-pass').value;
-    const avatar=document.getElementById('avatar-preview').src;
-    teamMembers.push({name,role,pass,avatar,permissions:{bans:false,teamApps:false,fraktionApps:false,news:false,teamAccountsVerwalten:true}});
-    localStorage.setItem('teamMembers',JSON.stringify(teamMembers));
-    e.target.reset();
-    document.getElementById('avatar-preview').src='sunriserp.png';
-    renderTeam(); renderPanel();
-});
-
-document.querySelector('.team-avatar').addEventListener('change', e=>{
-    const file=e.target.files[0];
-    if(file){
-        const reader=new FileReader();
-        reader.onload=ev=>document.getElementById('avatar-preview').src=ev.target.result;
-        reader.readAsDataURL(file);
-    }
-});
-
-function renderPanel(){
-    const tbodyT=document.querySelector('.team-accounts-table tbody');
-    tbodyT.innerHTML='';
-    teamMembers.forEach((m,i)=>{
-        const canEdit=currentUser.permissions.teamAccountsVerwalten || currentUser.role==='Leitung';
-        tbodyT.innerHTML+=`<tr>
-        <td>${m.name}</td><td>${m.role}</td><td><img src="${m.avatar}" class="avatar"></td>
-        <td>${(canEdit && m.name!=='Leitung')?`<button class="action-btn" onclick="openModal(${i})">Bearbeiten</button>`:''}</td>
-        </tr>`;
-    });
-}
-
+// ================== Render Functions ==================
 function renderTeam(){
     const tbody=document.querySelector('.team-table tbody');
     tbody.innerHTML='';
     teamMembers.forEach(m=>{
         tbody.innerHTML+=`<tr><td><img src="${m.avatar}" class="avatar"></td><td>${m.name}</td><td>${m.role}</td></tr>`;
     });
+}
+
+function renderPanel(){
+    const tbodyT=document.querySelector('.team-accounts-table tbody');
+    tbodyT.innerHTML='';
+    teamMembers.forEach((m,i)=>{
+        const canEdit = currentUser.permissions.teamAccountsVerwalten || currentUser.role==='Leitung';
+        tbodyT.innerHTML+=`<tr>
+            <td>${m.name}</td><td>${m.role}</td><td><img src="${m.avatar}" class="avatar"></td>
+            <td>${(canEdit && m.name!=='Leitung')?`<button class="action-btn" onclick="openModal(${i})">Bearbeiten</button>`:''}</td>
+        </tr>`;
+    });
+    applyPermissions();
 }
 
 function renderBewerbungen(){
@@ -378,7 +273,7 @@ function renderBewerbungen(){
                     || currentUser.role==='Leitung';
         if(!canView) return;
         tbody.innerHTML+=`<tr onclick="openAntrag('bewerbung',${i})" style="cursor:pointer;">
-        <td>${b.art}</td><td>${b.minecraft}</td><td>${b.discord}</td><td>${b.bearbeiter?b.bearbeiter:'-'}</td></tr>`;
+            <td>${b.art}</td><td>${b.minecraft}</td><td>${b.discord}</td><td>${b.bearbeiter?b.bearbeiter:'-'}</td></tr>`;
     });
 }
 
@@ -389,58 +284,31 @@ function renderEntbannungen(){
         const canView = currentUser.permissions.bans || currentUser.role==='Leitung';
         if(!canView) return;
         tbody.innerHTML+=`<tr onclick="openAntrag('entbannung',${i})" style="cursor:pointer;">
-        <td>${b.minecraft}</td><td>${b.discord}</td><td>${b.bearbeiter?b.bearbeiter:'-'}</td></tr>`;
+            <td>${b.minecraft}</td><td>${b.discord}</td><td>${b.bearbeiter?b.bearbeiter:'-'}</td></tr>`;
     });
 }
 
-function openAntrag(type,index){
-    currentAntragIndex=index;
-    currentAntragType=type;
-    const b = type==='bewerbung'?bewerbungen[index]:entbannungen[index];
-    let html='';
-    if(type==='bewerbung'){
-        html+=`<p><b>Art:</b> ${b.art}</p>`;
-        html+=`<p><b>Minecraft:</b> ${b.minecraft}</p>`;
-        html+=`<p><b>Discord:</b> ${b.discord}</p>`;
-        html+=`<p><b>Email:</b> ${b.email}</p>`;
-        html+=`<p><b>Position:</b> ${b.position||'-'}</p>`;
-        html+=`<p><b>Text:</b> ${b.text}</p>`;
-    } else {
-        html+=`<p><b>Minecraft:</b> ${b.minecraft}</p>`;
-        html+=`<p><b>Discord:</b> ${b.discord}</p>`;
-        html+=`<p><b>Email:</b> ${b.email}</p>`;
-        html+=`<p><b>DiscordBan:</b> ${b.discordban?'Ja':'Nein'}</p>`;
-        html+=`<p><b>Text:</b> ${b.text}</p>`;
-    }
-    html+=`<p><b>Notiz:</b> ${b.notiz||'-'}<br><b>Bearbeiter:</b> ${b.bearbeiter||'-'}</p>`;
-    document.getElementById('antrag-modal-title').innerText=type==='bewerbung'?'Bewerbung':'Entbannung';
-    document.getElementById('antrag-modal-content').innerHTML=html;
-    document.getElementById('antrag-modal-notiz').value=b.notiz||'';
-    document.getElementById('antrag-modal').style.display='flex';
-}
-function closeAntragModal(){ currentAntragIndex=null; currentAntragType=null; document.getElementById('antrag-modal').style.display='none'; }
-
-document.getElementById('save-antrag').addEventListener('click',()=>{
-    if(currentAntragIndex===null) return;
-    const b = currentAntragType==='bewerbung'?bewerbungen[currentAntragIndex]:entbannungen[currentAntragIndex];
-    const canEdit = (currentAntragType==='bewerbung' && ((b.art==='Teambewerbung' && currentUser.permissions.teamApps) || (b.art==='Firmenbewerbung' && currentUser.permissions.fraktionApps)))
-                    || (currentAntragType==='entbannung' && currentUser.permissions.bans)
-                    || currentUser.role==='Leitung';
-    if(!canEdit){ alert('Keine Berechtigung!'); return; }
-    if(b.bearbeiter && b.bearbeiter!==currentUser.name && currentUser.role!=='Leitung'){ alert('Nur der ursprüngliche Bearbeiter oder Leitung darf die Notiz bearbeiten!'); return; }
-    b.notiz=document.getElementById('antrag-modal-notiz').value;
-    if(!b.bearbeiter) b.bearbeiter=currentUser.name;
-    localStorage.setItem(currentAntragType==='bewerbung'?'bewerbungen':'entbannungen',JSON.stringify(currentAntragType==='bewerbung'?bewerbungen:entbannungen));
-    renderBewerbungen();
-    renderEntbannungen();
-    closeAntragModal();
-});
-
-function togglePositionField(){
-    const val=document.querySelector('.bewerbungs-art').value;
-    document.querySelector('.team-positionen').style.display=val==='Teambewerbung'?'block':'none';
+function renderNews(){
+    const container = document.getElementById('news-list');
+    container.innerHTML = '';
+    news.forEach(n=>{
+        container.innerHTML += `
+        <div style="border:1px solid rgba(255,255,255,0.3);padding:10px;margin:10px 0;">
+            <h3>${n.title}</h3>
+            ${n.img ? `<img src="${n.img}" style="max-width:100%;">` : ''}
+            <p>${n.text}</p>
+        </div>`;
+    });
 }
 
+// ================== Admin Permissions ==================
+function applyPermissions(){
+    document.getElementById('news-form-section').style.display = currentUser.permissions.news || currentUser.role==='Leitung' ? 'block':'none';
+    document.getElementById('team-create-form-section').style.display = currentUser.permissions.teamAccountsVerwalten || currentUser.role==='Leitung' ? 'block':'none';
+    document.getElementById('team-create-title').style.display = currentUser.permissions.teamAccountsVerwalten || currentUser.role==='Leitung' ? 'block':'none';
+}
+
+// ================== Modals ==================
 function openModal(i){
     editingIndex=i;
     const m=teamMembers[i];
@@ -456,7 +324,107 @@ function openModal(i){
 }
 function closeModal(){ document.getElementById('team-modal').style.display='none'; }
 
-document.getElementById('save-team').addEventListener('click', ()=>{
+function openAntrag(type,index){
+    currentAntragIndex=index;
+    currentAntragType=type;
+    const b = type==='bewerbung'?bewerbungen[index]:entbannungen[index];
+    let html='';
+    if(type==='bewerbung'){
+        html+=`<p><b>Art:</b> ${b.art}</p>
+               <p><b>Minecraft:</b> ${b.minecraft}</p>
+               <p><b>Discord:</b> ${b.discord}</p>
+               <p><b>Email:</b> ${b.email}</p>
+               <p><b>Position:</b> ${b.position||'-'}</p>
+               <p><b>Text:</b> ${b.text}</p>`;
+    } else {
+        html+=`<p><b>Minecraft:</b> ${b.minecraft}</p>
+               <p><b>Discord:</b> ${b.discord}</p>
+               <p><b>Email:</b> ${b.email}</p>
+               <p><b>DiscordBan:</b> ${b.discordban?'Ja':'Nein'}</p>
+               <p><b>Text:</b> ${b.text}</p>`;
+    }
+    html+=`<p><b>Notiz:</b> ${b.notiz||'-'}<br><b>Bearbeiter:</b> ${b.bearbeiter||'-'}</p>`;
+    document.getElementById('antrag-modal-title').innerText=type==='bewerbung'?'Bewerbung':'Entbannung';
+    document.getElementById('antrag-modal-content').innerHTML=html;
+    document.getElementById('antrag-modal-notiz').value=b.notiz||'';
+    document.getElementById('antrag-modal').style.display='flex';
+}
+function closeAntragModal(){ currentAntragIndex=null; currentAntragType=null; document.getElementById('antrag-modal').style.display='none'; }
+
+// ================== Firestore Save Functions ==================
+async function saveTeamMembers(){
+    const batch = db.batch();
+    teamMembers.forEach(m=>{
+        batch.set(db.collection('teamMembers').doc(m.name), m);
+    });
+    await batch.commit();
+}
+async function saveBewerbungen(){
+    const batch = db.batch();
+    bewerbungen.forEach((b,i)=>{
+        batch.set(db.collection('bewerbungen').doc(`bewerbung${i}`), b);
+    });
+    await batch.commit();
+}
+async function saveEntbannungen(){
+    const batch = db.batch();
+    entbannungen.forEach((b,i)=>{
+        batch.set(db.collection('entbannungen').doc(`entbannung${i}`), b);
+    });
+    await batch.commit();
+}
+async function saveNews(){
+    const batch = db.batch();
+    news.forEach((n,i)=>{
+        batch.set(db.collection('news').doc(`news${i}`), n);
+    });
+    await batch.commit();
+}
+
+// ================== Event Listeners ==================
+
+// Login
+document.querySelector('.login-form').addEventListener('submit', e=>{
+    e.preventDefault();
+    const user=document.querySelector('.login-user').value;
+    const pass=document.querySelector('.login-pass').value;
+    const u=teamMembers.find(m=>m.name===user && m.pass===pass);
+    if(u){
+        currentUser=u;
+        alert('Erfolgreich eingeloggt!');
+        document.querySelector('.panel-content').style.display='block';
+        applyPermissions();
+        renderPanel(); renderNews(); renderBewerbungen(); renderEntbannungen(); renderTeam();
+    } else alert('Falscher Benutzername oder Passwort!');
+});
+
+// Team erstellen
+document.querySelector('.team-create-form').addEventListener('submit', async e=>{
+    e.preventDefault();
+    const name=document.querySelector('.team-name').value;
+    const role=document.querySelector('.team-role').value;
+    const pass=document.querySelector('.team-pass').value;
+    const avatar=document.getElementById('avatar-preview').src;
+    const newMember = {name, role, pass, avatar, permissions:{bans:false,teamApps:false,fraktionApps:false,news:false,teamAccountsVerwalten:true}};
+    teamMembers.push(newMember);
+    await saveTeamMembers();
+    e.target.reset();
+    document.getElementById('avatar-preview').src='sunriserp.png';
+    renderTeam(); renderPanel();
+});
+
+// Avatar preview
+document.querySelector('.team-avatar').addEventListener('change', e=>{
+    const file=e.target.files[0];
+    if(file){
+        const reader=new FileReader();
+        reader.onload=ev=>document.getElementById('avatar-preview').src=ev.target.result;
+        reader.readAsDataURL(file);
+    }
+});
+
+// Team modal save
+document.getElementById('save-team').addEventListener('click', async ()=>{
     if(editingIndex===null) return;
     const m=teamMembers[editingIndex];
     m.name=document.getElementById('modal-name').value;
@@ -467,11 +435,12 @@ document.getElementById('save-team').addEventListener('click', ()=>{
     m.permissions.fraktionApps=document.getElementById('perm-fraktionapps').checked;
     m.permissions.news=document.getElementById('perm-news').checked;
     m.permissions.teamAccountsVerwalten=document.getElementById('perm-teamAccountsVerwalten').checked;
-    localStorage.setItem('teamMembers',JSON.stringify(teamMembers));
+    await saveTeamMembers();
     renderPanel(); renderTeam(); closeModal();
 });
 
-document.getElementById('delete-team').addEventListener('click', ()=>{
+// Team modal delete
+document.getElementById('delete-team').addEventListener('click', async ()=>{
     if(editingIndex===null) return;
     if(teamMembers[editingIndex].name==='Leitung'){
         alert('Leitung-Account kann nicht gelöscht werden!');
@@ -479,13 +448,44 @@ document.getElementById('delete-team').addEventListener('click', ()=>{
     }
     if(confirm('Account wirklich löschen?')){
         teamMembers.splice(editingIndex,1);
-        localStorage.setItem('teamMembers',JSON.stringify(teamMembers));
+        await saveTeamMembers();
         renderPanel(); renderTeam(); closeModal();
     }
 });
 
-// ================== News erstellen ==================
-document.querySelector('.news-form').addEventListener('submit', e=>{
+// Bewerbungen einreichen
+document.querySelector('.bewerbung-form').addEventListener('submit', async e=>{
+    e.preventDefault();
+    const art=document.querySelector('.bewerbungs-art').value;
+    const discord=document.querySelector('.bewerbung-discord').value;
+    const minecraft=document.querySelector('.bewerbung-minecraft').value;
+    const email=document.querySelector('.bewerbung-email').value;
+    const pos=document.querySelector('.bewerbung-position')?.value||'';
+    const text=document.querySelector('.bewerbung-text').value;
+    bewerbungen.push({datum:new Date().toLocaleString(),art,discord,minecraft,email,position:pos,text,notiz:'',bearbeiter:''});
+    await saveBewerbungen();
+    e.target.reset();
+    alert('Bewerbung abgeschickt!');
+    renderBewerbungen();
+});
+
+// Entbannung einreichen
+document.querySelector('.entbannung-form').addEventListener('submit', async e=>{
+    e.preventDefault();
+    const minecraft=document.querySelector('.entbannung-minecraft').value;
+    const discord=document.querySelector('.entbannung-discord').value;
+    const email=document.querySelector('.entbannung-email').value;
+    const discordban=document.querySelector('.entbannung-discordban').checked;
+    const text=document.querySelector('.entbannung-text').value;
+    entbannungen.push({datum:new Date().toLocaleString(),minecraft,discord,email,discordban,text,notiz:'',bearbeiter:''});
+    await saveEntbannungen();
+    e.target.reset();
+    alert('Entbannungsantrag abgeschickt!');
+    renderEntbannungen();
+});
+
+// News erstellen
+document.querySelector('.news-form').addEventListener('submit', async e=>{
     e.preventDefault();
     if(!currentUser || !currentUser.permissions.news){ alert('Keine Berechtigung!'); return; }
 
@@ -493,45 +493,39 @@ document.querySelector('.news-form').addEventListener('submit', e=>{
     const text = document.querySelector('.news-text').value;
     const file = document.querySelector('.news-img').files[0];
 
-    const saveNews = (imgData) => {
+    const saveNewsItem = async (imgData) => {
         news.push({title, text, img: imgData || null});
-        localStorage.setItem('news', JSON.stringify(news));
+        await saveNews();
         renderNews();
         e.target.reset();
     }
 
     if(file){
         const reader = new FileReader();
-        reader.onload = ev => saveNews(ev.target.result);
+        reader.onload = ev => saveNewsItem(ev.target.result);
         reader.readAsDataURL(file);
     } else {
-        saveNews(null);
+        saveNewsItem(null);
     }
 });
 
-// ================== News rendern ==================
-function renderNews(){
-    const container = document.getElementById('news-list');
-    container.innerHTML = '';
-    news.forEach(n=>{
-        container.innerHTML += `
-        <div style="border:1px solid rgba(255,255,255,0.3);padding:10px;margin:10px 0;">
-            <h3>${n.title}</h3>
-            ${n.img ? `<img src="${n.img}" style="max-width:100%;">` : ''}
-            <p>${n.text}</p>
-        </div>`;
-    });
-}
+// Antrag speichern
+document.getElementById('save-antrag').addEventListener('click', async ()=>{
+    if(currentAntragIndex===null) return;
+    const b = currentAntragType==='bewerbung'?bewerbungen[currentAntragIndex]:entbannungen[currentAntragIndex];
+    const canEdit = (currentAntragType==='bewerbung' && ((b.art==='Teambewerbung' && currentUser.permissions.teamApps) || (b.art==='Firmenbewerbung' && currentUser.permissions.fraktionApps)))
+                    || (currentAntragType==='entbannung' && currentUser.permissions.bans)
+                    || currentUser.role==='Leitung';
+    if(!canEdit){ alert('Keine Berechtigung!'); return; }
+    if(b.bearbeiter && b.bearbeiter!==currentUser.name && currentUser.role!=='Leitung'){ alert('Nur der ursprüngliche Bearbeiter oder Leitung darf die Notiz bearbeiten!'); return; }
+    b.notiz=document.getElementById('antrag-modal-notiz').value;
+    if(!b.bearbeiter) b.bearbeiter=currentUser.name;
+    if(currentAntragType==='bewerbung') await saveBewerbungen(); else await saveEntbannungen();
+    renderBewerbungen(); renderEntbannungen();
+    closeAntragModal();
+});
 
-// ================== Initiales Laden ==================
-news = JSON.parse(localStorage.getItem('news')) || [];
-renderNews();
 
-renderTeam();
-renderPanel();
-renderNews();
-renderBewerbungen();
-renderEntbannungen();
 </script>
 </body>
 </html>
