@@ -5,46 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>SunriseRP – Adminpanel</title>
 <style>
-body {
-    font-family: 'Poppins', sans-serif;
-    margin: 0;
-    color: #fff;
-    background: url('sunriserp.png') center/cover fixed no-repeat;
-}
-header {
-    background: rgba(0,0,0,0.6);
-    text-align: center;
-    padding: 20px;
-    font-size: 24px;
-    letter-spacing: 2px;
-    text-shadow: 0 0 10px #ffbb55;
-}
-nav {
-    text-align: center;
-    background: rgba(0,0,0,0.4);
-    padding: 10px;
-}
-nav button {
-    background: rgba(255,255,255,0.15);
-    border: none;
-    color: #fff;
-    padding: 10px 20px;
-    margin: 5px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: 0.3s;
-}
-nav button:hover {
-    background: rgba(255,200,120,0.4);
-}
-section {
-    display: none;
-    padding: 20px;
-    margin: 20px auto;
-    max-width: 1000px;
-    background: rgba(0,0,0,0.55);
-    border-radius: 10px;
-}
+body { font-family: 'Poppins', sans-serif; margin: 0; color: #fff; background: url('sunriserp.png') center/cover fixed no-repeat; }
+header { background: rgba(0,0,0,0.6); text-align: center; padding: 20px; font-size: 24px; letter-spacing: 2px; text-shadow: 0 0 10px #ffbb55; }
+nav { text-align: center; background: rgba(0,0,0,0.4); padding: 10px; }
+nav button { background: rgba(255,255,255,0.15); border: none; color: #fff; padding: 10px 20px; margin: 5px; border-radius: 5px; cursor: pointer; transition: 0.3s; }
+nav button:hover { background: rgba(255,200,120,0.4); }
+section { display: none; padding: 20px; margin: 20px auto; max-width: 1000px; background: rgba(0,0,0,0.55); border-radius: 10px; }
 section.active { display: block; }
 h2, h3 { text-align: center; color: #ffbb55; text-shadow: 0 0 10px #ffbb55; }
 table { width: 100%; border-collapse: collapse; color: #fff; }
@@ -58,22 +24,8 @@ button.action-btn { background: #ffbb55; color: #000; border-radius: 4px; paddin
 button.action-btn:hover { background: #ffd480; }
 .status-select { padding:4px; border-radius:4px; }
 .notiz-input { width:90%; padding:4px; border-radius:4px; }
-.modal {
-    display:none;
-    position:fixed;
-    z-index:1000;
-    left:0;top:0;width:100%;height:100%;
-    background: rgba(0,0,0,0.8);
-    justify-content:center;
-    align-items:center;
-}
-.modal-content {
-    background: rgba(0,0,0,0.9);
-    padding:20px;
-    border-radius:10px;
-    width:400px;
-    color:#fff;
-}
+.modal { display:none; position:fixed; z-index:1000; left:0;top:0;width:100%;height:100%; background: rgba(0,0,0,0.8); justify-content:center; align-items:center; }
+.modal-content { background: rgba(0,0,0,0.9); padding:20px; border-radius:10px; width:400px; color:#fff; }
 .modal-content h3 { margin-top:0; text-align:center; }
 .modal-content label { display:block; margin:5px 0; }
 .close-modal { cursor:pointer; color:#ffbb55; float:right; font-weight:bold; }
@@ -91,16 +43,19 @@ button.action-btn:hover { background: #ffd480; }
     <button onclick="showSection('panel')">Admin Panel</button>
 </nav>
 
+<!-- Regelwerk -->
 <section id="regelwerk" class="active">
 <h2>Regelwerk SunriseRP</h2>
 <pre style="white-space: pre-wrap; font-family: inherit;">Dein Regelwerk</pre>
 </section>
 
+<!-- News -->
 <section id="news">
 <h2>News</h2>
 <div id="news-list"></div>
 </section>
 
+<!-- Team -->
 <section id="team">
 <h2>Teammitglieder</h2>
 <table class="team-table">
@@ -109,6 +64,7 @@ button.action-btn:hover { background: #ffd480; }
 </table>
 </section>
 
+<!-- Bewerbung -->
 <section id="bewerbung">
 <h2>Bewerbung einreichen</h2>
 <form class="bewerbung-form">
@@ -117,7 +73,7 @@ button.action-btn:hover { background: #ffd480; }
 <option value="Teambewerbung">Teambewerbung</option>
 </select>
 <div class="team-positionen" style="display:none;">
-<select class="bewerbung-position">
+<select class="bewerbung-position" required>
 <option value="Supporter">Test Supporter</option>
 <option value="Builder">Test Builder</option>
 <option value="Developer">Test Developer</option>
@@ -133,6 +89,7 @@ button.action-btn:hover { background: #ffd480; }
 </form>
 </section>
 
+<!-- Entbannung -->
 <section id="entbannung">
 <h2>Entbannungsantrag</h2>
 <form class="entbannung-form">
@@ -145,6 +102,7 @@ button.action-btn:hover { background: #ffd480; }
 </form>
 </section>
 
+<!-- Admin Panel -->
 <section id="panel">
 <h2>Admin Panel</h2>
 <form class="login-form">
@@ -255,7 +213,7 @@ document.querySelector('.login-form').addEventListener('submit', e=>{
     const user=document.querySelector('.login-user').value;
     const pass=document.querySelector('.login-pass').value;
     const u=teamMembers.find(m=>m.name===user && m.pass===pass);
-    if(u){currentUser=u; alert('Erfolgreich eingeloggt!'); document.querySelector('.panel-content').style.display='block'; renderPanel();} 
+    if(u){currentUser=u; alert('Erfolgreich eingeloggt!'); document.querySelector('.panel-content').style.display='block'; renderPanel(); renderNews();} 
     else alert('Falscher Benutzername oder Passwort!');
 });
 
@@ -339,6 +297,10 @@ document.getElementById('save-team').addEventListener('click', ()=>{
 // ================== Modal löschen ==================
 document.getElementById('delete-team').addEventListener('click', ()=>{
     if(editingIndex===null) return;
+    if(teamMembers[editingIndex].name==='Leitung'){
+        alert('Leitung-Account kann nicht gelöscht werden!');
+        return;
+    }
     if(confirm('Account wirklich löschen?')){
         teamMembers.splice(editingIndex,1);
         localStorage.setItem('teamMembers',JSON.stringify(teamMembers));
@@ -351,11 +313,14 @@ function renderNews(){
     const container=document.getElementById('news-list');
     container.innerHTML='';
     news.forEach(n=>{
-        container.innerHTML+=`<div style="border:1px solid rgba(255,255,255,0.3);padding:10px;margin:10px 0;">
-        <h3>${n.title}</h3>${n.img?`<img src="${…`+n.img+`" style="max-width:100%;">`:''}<p>${n.text}</p></div>`;
+        container.innerHTML+=`
+        <div style="border:1px solid rgba(255,255,255,0.3);padding:10px;margin:10px 0;">
+            <h3>${n.title}</h3>
+            ${n.img ? `<img src="${n.img}" style="max-width:100%;">` : ''}
+            <p>${n.text}</p>
+        </div>`;
     });
 }
-renderNews();
 
 document.querySelector('.news-form').addEventListener('submit', e=>{
     e.preventDefault();
@@ -387,6 +352,7 @@ function togglePositionField(){
 
 renderTeam();
 renderPanel();
+renderNews();
 </script>
 </body>
 </html>
