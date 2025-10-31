@@ -22,13 +22,12 @@ textarea { width: 95%; min-height: 60px; }
 .save-btn:hover, .login-form button:hover { background: #ffd480; }
 button.action-btn { background: #ffbb55; color: #000; border-radius: 4px; padding: 6px 12px; cursor: pointer; transition: 0.3s; }
 button.action-btn:hover { background: #ffd480; }
-.status-select { padding:4px; border-radius:4px; }
-.notiz-input { width:90%; padding:4px; border-radius:4px; }
 .modal { display:none; position:fixed; z-index:1000; left:0;top:0;width:100%;height:100%; background: rgba(0,0,0,0.8); justify-content:center; align-items:center; }
-.modal-content { background: rgba(0,0,0,0.9); padding:20px; border-radius:10px; width:400px; color:#fff; }
+.modal-content { background: rgba(0,0,0,0.95); padding:20px; border-radius:10px; width:500px; color:#fff; max-height:90%; overflow-y:auto; }
 .modal-content h3 { margin-top:0; text-align:center; }
 .modal-content label { display:block; margin:5px 0; }
 .close-modal { cursor:pointer; color:#ffbb55; float:right; font-weight:bold; }
+.note-box { width:100%; min-height:50px; padding:5px; border-radius:4px; margin-top:5px; background: rgba(255,255,255,0.1); color:#fff; }
 </style>
 </head>
 <body>
@@ -43,16 +42,19 @@ button.action-btn:hover { background: #ffd480; }
     <button onclick="showSection('panel')">Admin Panel</button>
 </nav>
 
+<!-- Regelwerk -->
 <section id="regelwerk" class="active">
 <h2>Regelwerk SunriseRP</h2>
 <pre style="white-space: pre-wrap; font-family: inherit;">Dein Regelwerk</pre>
 </section>
 
+<!-- News -->
 <section id="news">
 <h2>News</h2>
 <div id="news-list"></div>
 </section>
 
+<!-- Team -->
 <section id="team">
 <h2>Teammitglieder</h2>
 <table class="team-table">
@@ -61,6 +63,7 @@ button.action-btn:hover { background: #ffd480; }
 </table>
 </section>
 
+<!-- Bewerbung -->
 <section id="bewerbung">
 <h2>Bewerbung einreichen</h2>
 <form class="bewerbung-form">
@@ -85,6 +88,7 @@ button.action-btn:hover { background: #ffd480; }
 </form>
 </section>
 
+<!-- Entbannung -->
 <section id="entbannung">
 <h2>Entbannungsantrag</h2>
 <form class="entbannung-form">
@@ -97,6 +101,7 @@ button.action-btn:hover { background: #ffd480; }
 </form>
 </section>
 
+<!-- Admin Panel -->
 <section id="panel">
 <h2>Admin Panel</h2>
 <form class="login-form">
@@ -114,12 +119,6 @@ button.action-btn:hover { background: #ffd480; }
 <button type="submit">News erstellen</button>
 </form>
 
-<h3>Bewerbungen verwalten</h3>
-<table class="bewerbungen-table">
-<thead><tr><th>Datum</th><th>Name</th><th>Art</th><th>Position</th><th>Status</th><th>Notiz</th><th>Bearbeiter</th></tr></thead>
-<tbody></tbody>
-</table>
-
 <h3>Teamverwaltung</h3>
 <form class="team-create-form">
 <input type="text" class="team-name" placeholder="Name" required>
@@ -130,13 +129,21 @@ button.action-btn:hover { background: #ffd480; }
 <button type="submit">Teamaccount erstellen</button>
 </form>
 
-<table class="team-accounts-table">
-<thead><tr><th>Name</th><th>Rolle</th><th>Avatar</th><th>Bearbeiten</th></tr></thead>
+<h3>Bewerbungen</h3>
+<table class="bewerbungen-table">
+<thead><tr><th>Art</th><th>Minecraft</th><th>Discord</th><th>Notiz</th></tr></thead>
+<tbody></tbody>
+</table>
+
+<h3>Entbannungen</h3>
+<table class="entbannungen-table">
+<thead><tr><th>Minecraft</th><th>Discord</th><th>Notiz</th></tr></thead>
 <tbody></tbody>
 </table>
 </div>
 </section>
 
+<!-- Modal für Team Bearbeiten -->
 <div class="modal" id="team-modal">
 <div class="modal-content">
 <span class="close-modal" onclick="closeModal()">×</span>
@@ -153,6 +160,18 @@ button.action-btn:hover { background: #ffd480; }
 </div>
 </div>
 
+<!-- Modal für Bewerbungen / Entbannungen -->
+<div class="modal" id="request-modal">
+<div class="modal-content">
+<span class="close-modal" onclick="closeRequestModal()">×</span>
+<h3 id="modal-title">Antrag</h3>
+<div id="modal-body"></div>
+<label>Notiz:</label>
+<textarea id="modal-note" class="note-box"></textarea>
+<button id="save-note">Speichern</button>
+</div>
+</div>
+
 <script>
 // ================== Daten ==================
 let teamMembers = JSON.parse(localStorage.getItem('teamMembers')) || [];
@@ -161,6 +180,8 @@ let entbannungen = JSON.parse(localStorage.getItem('entbannungen')) || [];
 let news = JSON.parse(localStorage.getItem('news')) || [];
 let currentUser = null;
 let editingIndex = null;
+let currentRequest = null;
+let currentRequestType = null;
 
 // Standard Leitung
 if(!teamMembers.find(m=>m.name==='Leitung')){
@@ -190,6 +211,7 @@ document.querySelector('.bewerbung-form').addEventListener('submit', e=>{
     localStorage.setItem('bewerbungen',JSON.stringify(bewerbungen));
     e.target.reset();
     alert('Bewerbung abgeschickt!');
+    renderRequests();
 });
 
 // ================== Entbannung ==================
@@ -204,6 +226,7 @@ document.querySelector('.entbannung-form').addEventListener('submit', e=>{
     localStorage.setItem('entbannungen',JSON.stringify(entbannungen));
     e.target.reset();
     alert('Entbannungsantrag abgeschickt!');
+    renderRequests();
 });
 
 // ================== Admin Login ==================
@@ -212,14 +235,8 @@ document.querySelector('.login-form').addEventListener('submit', e=>{
     const user=document.querySelector('.login-user').value;
     const pass=document.querySelector('.login-pass').value;
     const u=teamMembers.find(m=>m.name===user && m.pass===pass);
-    if(u){ 
-        currentUser=u; 
-        alert('Erfolgreich eingeloggt!'); 
-        document.querySelector('.panel-content').style.display='block'; 
-        renderPanel(); 
-        renderNews(); 
-        renderBewerbungen();
-    } else alert('Falscher Benutzername oder Passwort!');
+    if(u){currentUser=u; alert('Erfolgreich eingeloggt!'); document.querySelector('.panel-content').style.display='block'; renderPanel(); renderNews(); renderRequests(); renderTeam();} 
+    else alert('Falscher Benutzername oder Passwort!');
 });
 
 // ================== Team erstellen ==================
@@ -255,7 +272,7 @@ function renderPanel(){
         const canEdit=currentUser.permissions.teamAccounts || currentUser.role==='Leitung';
         tbodyT.innerHTML+=`<tr>
         <td>${m.name}</td><td>${m.role}</td><td><img src="${m.avatar}" class="avatar"></td>
-        <td>${(canEdit && m.name!=='Leitung')?`<button class="action-btn" onclick="openModal(${i})">Bearbeiten</button>`:''}</td>
+        <td>${(canEdit && m.name!=='Leitung')?`<button class="action-btn" onclick="openTeamModal(${i})">Bearbeiten</button>`:''}</td>
         </tr>`;
     });
 }
@@ -268,48 +285,6 @@ function renderTeam(){
         tbody.innerHTML+=`<tr><td><img src="${m.avatar}" class="avatar"></td><td>${m.name}</td><td>${m.role}</td></tr>`;
     });
 }
-
-// ================== Modal ==================
-function openModal(i){
-    if(!currentUser.permissions.teamAccounts && currentUser.role!=='Leitung'){ alert('Keine Berechtigung!'); return; }
-    editingIndex=i;
-    const m=teamMembers[i];
-    document.getElementById('modal-name').value=m.name;
-    document.getElementById('modal-role').value=m.role;
-    document.getElementById('modal-pass').value=m.pass;
-    document.getElementById('perm-bans').checked=m.permissions.bans;
-    document.getElementById('perm-teamapps').checked=m.permissions.teamApps;
-    document.getElementById('perm-fraktionapps').checked=m.permissions.fraktionApps;
-    document.getElementById('perm-news').checked=m.permissions.news;
-    document.getElementById('team-modal').style.display='flex';
-}
-function closeModal(){ document.getElementById('team-modal').style.display='none'; }
-
-// ================== Modal speichern ==================
-document.getElementById('save-team').addEventListener('click', ()=>{
-    if(editingIndex===null) return;
-    const m=teamMembers[editingIndex];
-    m.name=document.getElementById('modal-name').value;
-    m.role=document.getElementById('modal-role').value;
-    m.pass=document.getElementById('modal-pass').value;
-    m.permissions.bans=document.getElementById('perm-bans').checked;
-    m.permissions.teamApps=document.getElementById('perm-teamapps').checked;
-    m.permissions.fraktionApps=document.getElementById('perm-fraktionapps').checked;
-    m.permissions.news=document.getElementById('perm-news').checked;
-    localStorage.setItem('teamMembers',JSON.stringify(teamMembers));
-    renderPanel(); renderTeam(); closeModal();
-});
-
-// ================== Modal löschen ==================
-document.getElementById('delete-team').addEventListener('click', ()=>{
-    if(editingIndex===null) return;
-    if(teamMembers[editingIndex].name==='Leitung'){ alert('Leitung-Account kann nicht gelöscht werden!'); return; }
-    if(confirm('Account wirklich löschen?')){
-        teamMembers.splice(editingIndex,1);
-        localStorage.setItem('teamMembers',JSON.stringify(teamMembers));
-        renderPanel(); renderTeam(); closeModal();
-    }
-});
 
 // ================== News ==================
 function renderNews(){
@@ -347,35 +322,132 @@ document.querySelector('.news-form').addEventListener('submit', e=>{
     e.target.reset();
 });
 
-// ================== Bewerbungen rendern ==================
-function renderBewerbungen(){
-    const tbody=document.querySelector('.bewerbungen-table tbody');
-    tbody.innerHTML='';
-    if(!currentUser) return;
-    bewerbungen.forEach(b=>{
-        // Berechtigungen prüfen
-        if((b.art==='Teambewerbung' && !currentUser.permissions.teamApps) || (b.art==='Firmenbewerbung' && !currentUser.permissions.fraktionApps)) return;
-        tbody.innerHTML+=`<tr>
-            <td>${b.datum}</td>
-            <td>${b.minecraft}</td>
-            <td>${b.art}</td>
-            <td>${b.position || '-'}</td>
-            <td>${b.status}</td>
-            <td>${b.notiz}</td>
-            <td>${b.bearbeiter}</td>
-        </tr>`;
-    });
-}
-
 // ================== Teambewerbung Feld ==================
 function togglePositionField(){
     const val=document.querySelector('.bewerbungs-art').value;
     document.querySelector('.team-positionen').style.display=val==='Teambewerbung'?'block':'none';
 }
 
+// ================== Requests rendern ==================
+function renderRequests(){
+    // Bewerbungen
+    const tbodyB=document.querySelector('.bewerbungen-table tbody');
+    tbodyB.innerHTML='';
+    bewerbungen.forEach((b,i)=>{
+        const canOpen = currentUser.permissions.teamApps || (b.bearbeiter && b.bearbeiter===currentUser.name) || currentUser.role==='Leitung';
+        tbodyB.innerHTML+=`<tr onclick="${canOpen ? `openRequestModal('bewerbung',${i})` : ''}">
+        <td>${b.art}</td>
+        <td>${b.minecraft}</td>
+        <td>${b.discord}</td>
+        <td>${b.notiz ? b.notiz + ' ('+b.bearbeiter+')' : ''}</td>
+        </tr>`;
+    });
+    // Entbannungen
+    const tbodyE=document.querySelector('.entbannungen-table tbody');
+    tbodyE.innerHTML='';
+    entbannungen.forEach((e,i)=>{
+        const canOpen = currentUser.permissions.bans || (e.bearbeiter && e.bearbeiter===currentUser.name) || currentUser.role==='Leitung';
+        tbodyE.innerHTML+=`<tr onclick="${canOpen ? `openRequestModal('entbannung',${i})` : ''}">
+        <td>${e.minecraft}</td>
+        <td>${e.discord}</td>
+        <td>${e.notiz ? e.notiz + ' ('+e.bearbeiter+')' : ''}</td>
+        </tr>`;
+    });
+}
+
+// ================== Modal für Requests ==================
+function openRequestModal(type,index){
+    currentRequestType = type;
+    currentRequest = index;
+    const r = type==='bewerbung'? bewerbungen[index] : entbannungen[index];
+    document.getElementById('modal-title').innerText = type==='bewerbung'? 'Bewerbung ansehen' : 'Entbannungsantrag ansehen';
+    let html = `<p><strong>Datum:</strong> ${r.datum}</p>
+                <p><strong>Minecraft:</strong> ${r.minecraft}</p>
+                <p><strong>Discord:</strong> ${r.discord}</p>
+                ${r.position ? `<p><strong>Position:</strong> ${r.position}</p>` : ''}
+                <p><strong>Email:</strong> ${r.email}</p>
+                <p><strong>Text:</strong> ${r.text}</p>`;
+    document.getElementById('modal-body').innerHTML = html;
+    const textarea = document.getElementById('modal-note');
+    if(!r.bearbeiter) r.bearbeiter = '';
+    // Berechtigung prüfen
+    if(r.bearbeiter === currentUser.name || currentUser.role==='Leitung' || r.bearbeiter===''){
+        textarea.disabled = false;
+    } else {
+        textarea.disabled = true;
+    }
+    textarea.value = r.notiz;
+    document.getElementById('request-modal').style.display='flex';
+}
+
+function closeRequestModal(){
+    document.getElementById('request-modal').style.display='none';
+    currentRequest = null;
+    currentRequestType = null;
+}
+
+// ================== Save Note ==================
+document.getElementById('save-note').addEventListener('click',()=>{
+    if(currentRequest===null || !currentUser) return;
+    const r = currentRequestType==='bewerbung'? bewerbungen[currentRequest] : entbannungen[currentRequest];
+    if(r.bearbeiter === '' || r.bearbeiter === currentUser.name || currentUser.role==='Leitung'){
+        r.notiz = document.getElementById('modal-note').value;
+        if(!r.bearbeiter) r.bearbeiter = currentUser.name;
+        if(currentRequestType==='bewerbung') localStorage.setItem('bewerbungen',JSON.stringify(bewerbungen));
+        else localStorage.setItem('entbannungen',JSON.stringify(entbannungen));
+        renderRequests();
+        alert('Notiz gespeichert!');
+    } else {
+        alert('Keine Berechtigung die Notiz zu bearbeiten!');
+    }
+});
+
+// ================== Team Modal ==================
+function openTeamModal(i){
+    editingIndex=i;
+    const m=teamMembers[i];
+    document.getElementById('modal-name').value=m.name;
+    document.getElementById('modal-role').value=m.role;
+    document.getElementById('modal-pass').value=m.pass;
+    document.getElementById('perm-bans').checked=m.permissions.bans;
+    document.getElementById('perm-teamapps').checked=m.permissions.teamApps;
+    document.getElementById('perm-fraktionapps').checked=m.permissions.fraktionApps;
+    document.getElementById('perm-news').checked=m.permissions.news;
+    document.getElementById('team-modal').style.display='flex';
+}
+function closeModal(){ document.getElementById('team-modal').style.display='none'; }
+
+document.getElementById('save-team').addEventListener('click', ()=>{
+    if(editingIndex===null) return;
+    const m=teamMembers[editingIndex];
+    m.name=document.getElementById('modal-name').value;
+    m.role=document.getElementById('modal-role').value;
+    m.pass=document.getElementById('modal-pass').value;
+    m.permissions.bans=document.getElementById('perm-bans').checked;
+    m.permissions.teamApps=document.getElementById('perm-teamapps').checked;
+    m.permissions.fraktionApps=document.getElementById('perm-fraktionapps').checked;
+    m.permissions.news=document.getElementById('perm-news').checked;
+    localStorage.setItem('teamMembers',JSON.stringify(teamMembers));
+    renderPanel(); renderTeam(); closeModal();
+});
+
+document.getElementById('delete-team').addEventListener('click', ()=>{
+    if(editingIndex===null) return;
+    if(teamMembers[editingIndex].name==='Leitung'){
+        alert('Leitung-Account kann nicht gelöscht werden!');
+        return;
+    }
+    if(confirm('Account wirklich löschen?')){
+        teamMembers.splice(editingIndex,1);
+        localStorage.setItem('teamMembers',JSON.stringify(teamMembers));
+        renderPanel(); renderTeam(); closeModal();
+    }
+});
+
 renderTeam();
 renderPanel();
 renderNews();
+renderRequests();
 </script>
 </body>
 </html>
