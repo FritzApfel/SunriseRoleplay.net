@@ -401,33 +401,37 @@ document.getElementById('delete-team').addEventListener('click', ()=>{
     }
 });
 
+// ================== News erstellen ==================
 document.querySelector('.news-form').addEventListener('submit', e=>{
     e.preventDefault();
     if(!currentUser || !currentUser.permissions.news){ alert('Keine Berechtigung!'); return; }
-    const title=document.querySelector('.news-title').value;
-    const text=document.querySelector('.news-text').value;
-    const file=document.querySelector('.news-img').files[0];
+
+    const title = document.querySelector('.news-title').value;
+    const text = document.querySelector('.news-text').value;
+    const file = document.querySelector('.news-img').files[0];
+
+    const saveNews = (imgData) => {
+        news.push({title, text, img: imgData || null});
+        localStorage.setItem('news', JSON.stringify(news));
+        renderNews();
+        e.target.reset();
+    }
+
     if(file){
-        const reader=new FileReader();
-        reader.onload=ev=>{
-            news.push({title,text,img:ev.target.result});
-            localStorage.setItem('news',JSON.stringify(news));
-            renderNews();
-        };
+        const reader = new FileReader();
+        reader.onload = ev => saveNews(ev.target.result);
         reader.readAsDataURL(file);
     } else {
-        news.push({title,text,img:null});
-        localStorage.setItem('news',JSON.stringify(news));
-        renderNews();
+        saveNews(null);
     }
-    e.target.reset();
 });
 
+// ================== News rendern ==================
 function renderNews(){
-    const container=document.getElementById('news-list');
-    container.innerHTML='';
+    const container = document.getElementById('news-list');
+    container.innerHTML = '';
     news.forEach(n=>{
-        container.innerHTML+=`
+        container.innerHTML += `
         <div style="border:1px solid rgba(255,255,255,0.3);padding:10px;margin:10px 0;">
             <h3>${n.title}</h3>
             ${n.img ? `<img src="${n.img}" style="max-width:100%;">` : ''}
@@ -435,6 +439,10 @@ function renderNews(){
         </div>`;
     });
 }
+
+// ================== Initiales Laden ==================
+news = JSON.parse(localStorage.getItem('news')) || [];
+renderNews();
 
 renderTeam();
 renderPanel();
