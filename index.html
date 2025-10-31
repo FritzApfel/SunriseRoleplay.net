@@ -345,38 +345,87 @@ document.querySelector('.team-avatar').addEventListener('change', e=>{
     }
 });
 
+<!-- Teamaccounts rendern -->
+<table class="team-accounts-table">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Rolle</th>
+      <th>Avatar</th>
+      <th>Bearbeiten</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<script>
 // Teamaccounts rendern
 function renderTeamAccounts(){
     const tbody = document.querySelector('.team-accounts-table tbody');
     tbody.innerHTML='';
     teamMembers.forEach((t,i)=>{
         const tr = document.createElement('tr');
-        tr.innerHTML=`<td>${t.name}</td><td>${t.role}</td><td><img src="${t.avatar}" class="avatar"></td>
-        <td><button class="action-btn" onclick="editTeam(${i})">Bearbeiten</button></td>
-        <td><button class="action-btn" onclick="deleteTeam(${i})">Löschen</button></td>`;
+        tr.innerHTML=`
+        <td>${t.name}</td>
+        <td>${t.role}</td>
+        <td><img src="${t.avatar}" class="avatar"></td>
+        <td>
+          ${t.name === 'Leitung' ? '<em>Geschützt</em>' : `<button class="action-btn" onclick="editTeam(${i})">Bearbeiten</button>`}
+        </td>`;
         tbody.appendChild(tr);
     });
 }
 
-// Teamaccount bearbeiten & löschen
+// Bearbeiten-Dialog
 function editTeam(i){
     const t = teamMembers[i];
+    if(t.name === 'Leitung' && currentUser.name !== 'Leitung'){
+        alert('Leitung kann nur von der Leitung bearbeitet werden.');
+        return;
+    }
+
+    // Dialog mit allen Infos
     const name = prompt('Name:', t.name);
     const role = prompt('Rolle:', t.role);
     const pass = prompt('Passwort:', t.pass);
+
+    const entbann = confirm('Entbannungsanträge bearbeiten?') ? true : false;
+    const teamApps = confirm('Team-Bewerbungen bearbeiten?') ? true : false;
+    const fraktionApps = confirm('Fraktions-Bewerbungen bearbeiten?') ? true : false;
+
+    // Account löschen nur bei Berechtigung
+    let deleteAccount = false;
+    if(currentUser.name === 'Leitung' || currentUser.permissions.teamAccounts){
+        deleteAccount = confirm('Account löschen?');
+    }
+
+    if(deleteAccount){
+        if(t.name === 'Leitung'){
+            alert('Leitung kann nicht gelöscht werden!');
+        } else {
+            teamMembers.splice(i,1);
+            localStorage.setItem('teamMembers', JSON.stringify(teamMembers));
+            renderTeamAccounts();
+            return;
+        }
+    }
+
     if(name && role && pass){
-        t.name=name; t.role=role; t.pass=pass;
+        t.name = name;
+        t.role = role;
+        t.pass = pass;
+        t.permissions = {
+            bans: entbann,
+            teamApps: teamApps,
+            fraktionApps: fraktionApps
+        };
         localStorage.setItem('teamMembers', JSON.stringify(teamMembers));
         renderTeamAccounts();
     }
 }
-function deleteTeam(i){
-    if(confirm('Teamaccount wirklich löschen?')){
-        teamMembers.splice(i,1);
-        localStorage.setItem('teamMembers', JSON.stringify(teamMembers));
-        renderTeamAccounts();
-    }
-}
+</script>
+
+    
 
 // Speichern
 document.querySelector('.save-btn').addEventListener('click', ()=>{
